@@ -1,1 +1,1 @@
-# thibaultbarret..github.io
+# thibaultbarret.github.io
