@@ -1,0 +1,71 @@
+---
+// src/components/Manuscrit.astro
+import { getCollection } from 'astro:content';
+
+const chapters = (await getCollection('chapters'))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="manuscrit" class="py-24 fade-in" style="background: var(--bg-surface);">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Manuscrit</h2>
+    <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+    <div class="space-y-3">
+      {chapters.map(chapter => (
+        <details class="rounded-lg overflow-hidden group" style="border: 1px solid var(--border);">
+          <summary
+            class="flex items-center justify-between px-6 py-4 cursor-pointer select-none font-serif font-semibold text-lg"
+            style="background: var(--bg); color: var(--text); list-style: none;"
+          >
+            <span>Chapitre {chapter.data.order} — {chapter.data.title}</span>
+            <span class="indicator text-sm transition-transform" style="color: var(--accent);">▶</span>
+          </summary>
+
+          <div class="px-6 py-6 space-y-8" style="background: var(--bg);">
+            {chapter.data.figures.length === 0 ? (
+              <p class="text-sm italic" style="color: var(--text-muted);">
+                Aucune figure pour ce chapitre.
+              </p>
+            ) : (
+              chapter.data.figures.map(fig => (
+                <figure>
+                  <iframe
+                    src={`/figures/manuscrit/${fig.filename}`}
+                    width="100%"
+                    height="450"
+                    loading="lazy"
+                    title={fig.title}
+                    class="block rounded"
+                    style="border: 1px solid var(--border);"
+                  />
+                  <figcaption class="mt-3 text-sm text-center" style="color: var(--text-muted);">
+                    {fig.title}
+                  </figcaption>
+                </figure>
+              ))
+            )}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  details[open] .indicator {
+    transform: rotate(90deg);
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details > summary {
+    transition: background-color 0.15s;
+  }
+
+  details > summary:hover {
+    opacity: 0.85;
+  }
+</style>
