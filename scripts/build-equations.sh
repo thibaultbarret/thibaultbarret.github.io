@@ -1,5 +1,6 @@
 #!/bin/bash
 # Compile les fichiers .tex de equations/ en SVG dans public/equations/
+# Utilise : latex → DVI → dvisvgm (TeXLive)
 # Usage : ./scripts/build-equations.sh
 #         ./scripts/build-equations.sh nom-fichier  (un seul fichier)
 
@@ -10,6 +11,9 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SRC_DIR="$ROOT_DIR/equations"
 OUT_DIR="$ROOT_DIR/public/equations"
 TMP_DIR="$(mktemp -d)"
+
+# Utiliser le dvisvgm de TeXLive (le Homebrew ne connaît pas la config TeXLive)
+DVISVGM=/usr/local/texlive/2026/bin/universal-darwin/dvisvgm
 
 # Nettoyage automatique du dossier temporaire à la sortie
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -29,26 +33,24 @@ compile_one() {
     # Copier dans le dossier temporaire
     cp "$texfile" "$TMP_DIR/"
 
-    # Compiler avec pdflatex depuis $TMP_DIR pour que \input{preamble} soit trouvé
-    (cd "$TMP_DIR" && pdflatex \
+    # Compiler avec latex (→ DVI) depuis $TMP_DIR pour que \input{preamble} soit trouvé
+    (cd "$TMP_DIR" && latex \
         -interaction=nonstopmode \
         -halt-on-error \
         "$name.tex" \
         > /dev/null 2>&1) || {
-            echo "  ✗ Erreur pdflatex — relance avec log visible :"
-            (cd "$TMP_DIR" && pdflatex -interaction=nonstopmode "$name.tex")
+            echo "  ✗ Erreur latex — relance avec log visible :"
+            (cd "$TMP_DIR" && latex -interaction=nonstopmode "$name.tex")
             return 1
         }
 
-    # Convertir PDF → SVG (glyphes en chemins vectoriels, pas de dépendance fonte)
-    dvisvgm \
-        --pdf \
+    # Convertir DVI → SVG via dvisvgm TeXLive (glyphes en chemins vectoriels)
+    "$DVISVGM" \
         --exact-bbox \
         --no-fonts \
         --output="$OUT_DIR/$name.svg" \
-        "$TMP_DIR/$name.pdf" \
-        > /dev/null 2>&1 || {
-            echo "  ✗ Erreur dvisvgm"
+        "$TMP_DIR/$name.dvi" 2>&1 | grep -v "^warning:" | grep -v "^$" || {
+            echo "  ✗ Erreur dvisvgm (voir ci-dessus)"
             return 1
         }
 
