@@ -24,4 +24,16 @@ const publications = defineCollection({
   }),
 });
 
-export const collections = { projects, publications };
+const chapters = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title:  z.string(),
+    order:  z.number(),
+    figures: z.array(z.object({
+      filename: z.string(),
+      title:    z.string(),
+    })).default([]),
+  }),
+});
+
+export const collections = { projects, publications, chapters };
