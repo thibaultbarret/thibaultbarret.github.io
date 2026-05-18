@@ -64,8 +64,9 @@ export default {
   // Tenseur ordre 2 : tilde sous le symbole (scriptscriptstyle pour le réduire)
   "\\st":           "\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{#1}}",
 
-  // Tenseur ordre 4 : deux tildes EMPILÉS sous le symbole via \substack
-  "\\stt":          "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{#1}}",
+  // Tenseur ordre 4 : deux tildes empilés via underset imbriqués
+  // underset externe met un ~ sous (symbole + ~ interne)
+  "\\stt":          "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{#1}}}",
 
   // \Scale[1.4] → \large (taille légèrement supérieure)
   "\\bSig":         "{\\large\\boldsymbol{\\sigma}}",
@@ -147,12 +148,12 @@ export default {
   "\\stDeltaEpsP":      "\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}^{\\mathrm{p}}",
   "\\stDeltaEpsIncNp":  "\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}^{(n+1)}",
 
-  // Tenseurs ordre 4 — double tilde empilé
-  "\\sttC":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{C}}",
-  "\\sttL":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{L}}",
-  "\\sttK":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{K}}",
-  "\\sttId":  "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\mathbf{I}}",
-  "\\sttH":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\mathbf{H}}",
+  // Tenseurs ordre 4 — double tilde empilé via underset imbriqués
+  "\\sttC":   "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{C}}}",
+  "\\sttL":   "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{L}}}",
+  "\\sttK":   "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{K}}}",
+  "\\sttId":  "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\mathbf{I}}}",
+  "\\sttH":   "\\underset{\\scriptscriptstyle\\sim}{\\underset{\\scriptscriptstyle\\sim}{\\mathbf{H}}}",
 
   // LDC
   "\\dStSigdStEps":       "\\dfrac{\\partial\\Delta\\underset{\\sim}{\\boldsymbol{\\sigma}}}{\\partial\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}}",
