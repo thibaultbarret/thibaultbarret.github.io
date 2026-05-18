@@ -29,15 +29,14 @@ compile_one() {
     # Copier dans le dossier temporaire
     cp "$texfile" "$TMP_DIR/"
 
-    # Compiler avec pdflatex (mode silencieux, s'arrête sur erreur)
-    pdflatex \
+    # Compiler avec pdflatex depuis $TMP_DIR pour que \input{preamble} soit trouvé
+    (cd "$TMP_DIR" && pdflatex \
         -interaction=nonstopmode \
         -halt-on-error \
-        -output-directory="$TMP_DIR" \
-        "$TMP_DIR/$name.tex" \
-        > /dev/null 2>&1 || {
+        "$name.tex" \
+        > /dev/null 2>&1) || {
             echo "  ✗ Erreur pdflatex — relance avec log visible :"
-            pdflatex -interaction=nonstopmode -output-directory="$TMP_DIR" "$TMP_DIR/$name.tex"
+            (cd "$TMP_DIR" && pdflatex -interaction=nonstopmode "$name.tex")
             return 1
         }
 
