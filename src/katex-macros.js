@@ -61,19 +61,15 @@ export default {
 
   // ── MMC.sty ────────────────────────────────────────────────────────────────
 
-  // Tenseur ordre 2 : tilde sous le symbole
-  // \st{X} → \underset{\sim}{\boldsymbol{X}}
-  "\\st":           "\\underset{\\sim}{\\boldsymbol{#1}}",
+  // Tenseur ordre 2 : tilde sous le symbole (scriptscriptstyle pour le réduire)
+  "\\st":           "\\underset{\\scriptscriptstyle\\sim}{\\boldsymbol{#1}}",
 
-  // Tenseur ordre 4 : double tilde sous le symbole
-  // \stt{X} → \underset{\sim\\sim}{\boldsymbol{X}}
-  // (MMC.sty utilisait \st[2]{X})
-  "\\stt":          "\\underset{\\scriptstyle\\sim\\!\\sim}{\\boldsymbol{#1}}",
+  // Tenseur ordre 4 : deux tildes EMPILÉS sous le symbole via \substack
+  "\\stt":          "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{#1}}",
 
-  // Versions pratiques avec bold pré-appliqué pour les tenseurs nommés
-  // (le \Scale[1.4] est ignoré — pas de scaling arbitraire en KaTeX)
-  "\\bSig":         "\\boldsymbol{\\sigma}",
-  "\\bEps":         "\\boldsymbol{\\varepsilon}",
+  // \Scale[1.4] → \large (taille légèrement supérieure)
+  "\\bSig":         "{\\large\\boldsymbol{\\sigma}}",
+  "\\bEps":         "{\\large\\boldsymbol{\\varepsilon}}",
 
   // Configurations
   "\\configIni":    "\\Omega_{0}",
@@ -151,12 +147,12 @@ export default {
   "\\stDeltaEpsP":      "\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}^{\\mathrm{p}}",
   "\\stDeltaEpsIncNp":  "\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}^{(n+1)}",
 
-  // Tenseurs ordre 4
-  "\\sttC":   "\\underset{\\scriptstyle\\sim\\!\\sim}{\\boldsymbol{C}}",
-  "\\sttL":   "\\underset{\\scriptstyle\\sim\\!\\sim}{\\boldsymbol{L}}",
-  "\\sttK":   "\\underset{\\scriptstyle\\sim\\!\\sim}{\\boldsymbol{K}}",
-  "\\sttId":  "\\underset{\\scriptstyle\\sim\\!\\sim}{\\mathbf{I}}",
-  "\\sttH":   "\\underset{\\scriptstyle\\sim\\!\\sim}{\\mathbf{H}}",
+  // Tenseurs ordre 4 — double tilde empilé
+  "\\sttC":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{C}}",
+  "\\sttL":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{L}}",
+  "\\sttK":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\boldsymbol{K}}",
+  "\\sttId":  "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\mathbf{I}}",
+  "\\sttH":   "\\underset{\\substack{\\scriptscriptstyle\\sim\\\\\\scriptscriptstyle\\sim}}{\\mathbf{H}}",
 
   // LDC
   "\\dStSigdStEps":       "\\dfrac{\\partial\\Delta\\underset{\\sim}{\\boldsymbol{\\sigma}}}{\\partial\\Delta\\underset{\\sim}{\\boldsymbol{\\varepsilon}}}",
