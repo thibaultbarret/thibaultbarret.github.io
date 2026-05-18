@@ -1,0 +1,50 @@
+---
+// src/components/Contact.astro
+const email = 'thibault.barret56@gmail.com';
+---
+
+<section id="contact" class="py-24 fade-in" style="background: var(--bg);">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Contact</h2>
+    <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+    <div class="max-w-lg">
+      <p class="text-lg leading-relaxed mb-8" style="color: var(--text-muted);">
+        N'hésitez pas à me contacter pour toute question sur mes travaux de recherche ou pour collaborer.
+      </p>
+
+      <a
+        href={`mailto:${email}`}
+        class="text-xl font-medium transition-opacity hover:opacity-70"
+        style="color: var(--accent);"
+      >
+        {email}
+      </a>
+
+      <div class="flex gap-4 mt-8">
+        <a
+          href="https://github.com/thibaultbarret"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-4 py-2 rounded text-sm font-medium transition-opacity hover:opacity-70"
+          style="border: 1px solid var(--border); color: var(--text);"
+        >
+          GitHub
+        </a>
+        <a
+          href="https://linkedin.com/in/thibaultbarret"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-4 py-2 rounded text-sm font-medium transition-opacity hover:opacity-70"
+          style="border: 1px solid var(--border); color: var(--text);"
+        >
+          LinkedIn
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="py-6 text-center text-xs" style="color: var(--text-muted); border-top: 1px solid var(--border);">
+  © {new Date().getFullYear()} Thibault Barret
+</footer>

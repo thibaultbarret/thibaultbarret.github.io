@@ -4,23 +4,25 @@ import Hero from '../components/Hero.astro';
 import Research from '../components/Research.astro';
 import Publications from '../components/Publications.astro';
 import CV from '../components/CV.astro';
+import Contact from '../components/Contact.astro';
 import '../styles/global.css';
 ---
-
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Thibault Barret</title>
-	</head>
-	<body>
-		<Nav />
-		<main class="pt-16">
-			<Hero />
-			<Research />
-			<Publications />
-			<CV />
-		</main>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Portfolio de Thibault Barret — Doctorant en mécanique, analyse inverse, DIC, FEMU." />
+    <title>Thibault Barret — Mécanique & Simulation</title>
+  </head>
+  <body>
+    <Nav />
+    <main class="pt-16">
+      <Hero />
+      <Research />
+      <Publications />
+      <CV />
+      <Contact />
+    </main>
+  </body>
 </html>
