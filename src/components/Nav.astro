@@ -1,17 +1,17 @@
 ---
 // src/components/Nav.astro
 const links = [
-  { href: '#research',     label: 'Recherche' },
-  { href: '#manuscrit',    label: 'Manuscrit' },
-  { href: '#publications', label: 'Publications' },
-  { href: '#cv',           label: 'CV' },
-  { href: '#contact',      label: 'Contact' },
+  { href: '/#research',     label: 'Recherche' },
+  { href: '/manuscrit',     label: 'Manuscrit' },
+  { href: '/#publications', label: 'Publications' },
+  { href: '/#cv',           label: 'CV' },
+  { href: '/#contact',      label: 'Contact' },
 ];
 ---
 
 <nav class="fixed top-0 left-0 right-0 z-50 border-b" style="background: var(--bg); border-color: var(--border);">
   <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <a href="#hero" class="font-serif font-bold text-lg" style="color: var(--text);">
+    <a href="/" class="font-serif font-bold text-lg" style="color: var(--text);">
       Thibault Barret
     </a>
 
