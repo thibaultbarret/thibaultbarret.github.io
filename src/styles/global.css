@@ -12,22 +12,24 @@
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* Catppuccin Latte (light) */
 :root {
-  --bg:          #fafaf8;
-  --bg-surface:  #f0ede8;
-  --text:        #1c1c1a;
-  --text-muted:  #6b6860;
-  --accent:      #c9a84c;
-  --border:      #e2ddd8;
+  --bg:          #eff1f5;
+  --bg-surface:  #e6e9ef;
+  --text:        #4c4f69;
+  --text-muted:  #6c6f85;
+  --accent:      #8839ef;
+  --border:      #ccd0da;
 }
 
+/* Catppuccin Mocha (dark) */
 .dark {
-  --bg:          #141412;
-  --bg-surface:  #1e1e1b;
-  --text:        #f0ede8;
-  --text-muted:  #9b9690;
-  --accent:      #e8c46a;
-  --border:      #2e2e2a;
+  --bg:          #1e1e2e;
+  --bg-surface:  #181825;
+  --text:        #cdd6f4;
+  --text-muted:  #a6adc8;
+  --accent:      #cba6f7;
+  --border:      #45475a;
 }
 
 html {
