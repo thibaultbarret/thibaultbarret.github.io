@@ -1,0 +1,59 @@
+---
+// src/components/Publications.astro
+import { getCollection } from 'astro:content';
+
+const publications = (await getCollection('publications'))
+  .sort((a, b) => b.data.year - a.data.year);
+---
+
+<section id="publications" class="py-24 fade-in" style="background: var(--bg);">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Publications</h2>
+    <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+    <ol class="space-y-6">
+      {publications.map(pub => (
+        <li class="flex gap-4 p-6 rounded-lg" style="background: var(--bg-surface); border: 1px solid var(--border);">
+          <span class="font-mono text-sm font-medium mt-0.5 shrink-0" style="color: var(--accent);">
+            {pub.data.year}
+          </span>
+          <div>
+            <p class="font-medium mb-1" style="color: var(--text);">
+              {pub.data.title}
+            </p>
+            <p class="text-sm mb-2" style="color: var(--text-muted);">
+              {pub.data.authors.join(', ')}
+            </p>
+            <p class="text-sm italic mb-3" style="color: var(--text-muted);">
+              {pub.data.journal}
+            </p>
+            <div class="flex gap-3">
+              {pub.data.doi && (
+                <a
+                  href={`https://doi.org/${pub.data.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs font-medium transition-opacity hover:opacity-70"
+                  style="color: var(--accent);"
+                >
+                  DOI →
+                </a>
+              )}
+              {pub.data.pdf && (
+                <a
+                  href={pub.data.pdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs font-medium transition-opacity hover:opacity-70"
+                  style="color: var(--accent);"
+                >
+                  PDF →
+                </a>
+              )}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
