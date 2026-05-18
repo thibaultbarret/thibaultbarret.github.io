@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Dark mode: class-based (add 'dark' class to <html>) */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-serif: "Lora", "Georgia", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
