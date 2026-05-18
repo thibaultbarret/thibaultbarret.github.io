@@ -19,5 +19,19 @@ import '../styles/global.css';
     <footer class="py-6 text-center text-xs" style="color: var(--text-muted); border-top: 1px solid var(--border);">
       © {new Date().getFullYear()} Thibault Barret
     </footer>
+    <script>
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
   </body>
 </html>
