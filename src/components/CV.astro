@@ -17,6 +17,21 @@ const formations = [
     description: '',
   },
 ];
+
+const competences: { categorie: string; tags: string[] }[] = [
+  {
+    categorie: 'Langages',
+    tags: ['Python', 'C++', 'LaTeX', 'Bash'],
+  },
+  {
+    categorie: 'Méthodes',
+    tags: ['Analyse inverse', 'Identifiabilité', 'FEMU', 'DIC', 'Éléments finis'],
+  },
+  {
+    categorie: 'Outils',
+    tags: ['MFront', 'MTest', 'Cast3M', 'Tree-sitter', 'LSP', 'Git'],
+  },
+];
 ---
 
 <section id="cv" class="py-24 fade-in" style="background: var(--bg-surface);">
@@ -73,5 +88,29 @@ const formations = [
         </ol>
       </div>
     </div>
+
+    <div class="mt-16">
+      <h3 class="font-serif text-xl font-semibold mb-8" style="color: var(--text);">Compétences</h3>
+      <div class="space-y-5">
+        {competences.map(({ categorie, tags }) => (
+          <div class="flex gap-4 items-start">
+            <span class="text-xs font-mono pt-1 w-24 shrink-0" style="color: var(--text-muted);">
+              {categorie}
+            </span>
+            <div class="flex flex-wrap gap-2">
+              {tags.map(tag => (
+                <span
+                  class="text-xs px-3 py-1 rounded"
+                  style="background: var(--bg); color: var(--text); border: 1px solid var(--border);"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
 </section>
