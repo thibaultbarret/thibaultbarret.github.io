@@ -8,3 +8,49 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:          #fafaf8;
+  --bg-surface:  #f0ede8;
+  --text:        #1c1c1a;
+  --text-muted:  #6b6860;
+  --accent:      #c9a84c;
+  --border:      #e2ddd8;
+}
+
+.dark {
+  --bg:          #141412;
+  --bg-surface:  #1e1e1b;
+  --text:        #f0ede8;
+  --text-muted:  #9b9690;
+  --accent:      #e8c46a;
+  --border:      #2e2e2a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+}
+
+.fade-in.visible {
+  animation: fadeInUp 0.5s ease forwards;
+}
