@@ -25,3 +25,8 @@ pnpm-debug.log*
 
 # editors
 .vscode/
+
+# Fichiers temporaires LaTeX (générés par build-equations.sh)
+equations/*.aux
+equations/*.log
+equations/*.pdf

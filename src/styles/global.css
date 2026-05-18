@@ -54,3 +54,14 @@ body {
 .fade-in.visible {
   animation: fadeInUp 0.5s ease forwards;
 }
+
+/* Équations LaTeX en SVG — inversion en dark mode */
+.math-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.dark .math-svg {
+  filter: invert(1);
+}
