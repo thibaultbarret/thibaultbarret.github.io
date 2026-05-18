@@ -1,0 +1,50 @@
+---
+// src/components/Research.astro
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects'))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="research" class="py-24 fade-in" style="background: var(--bg-surface);">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Recherche</h2>
+    <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+    <div class="grid gap-12">
+      {projects.map(project => (
+        <article class="rounded-lg overflow-hidden" style="border: 1px solid var(--border); background: var(--bg);">
+          {project.data.figure && (
+            <iframe
+              src={`/figures/${project.data.figure}`}
+              width="100%"
+              height="450"
+              loading="lazy"
+              title={project.data.title}
+              class="block border-b"
+              style="border-color: var(--border);"
+            />
+          )}
+          <div class="p-6">
+            <h3 class="font-serif text-xl font-semibold mb-3" style="color: var(--text);">
+              {project.data.title}
+            </h3>
+            <p class="leading-relaxed mb-4" style="color: var(--text-muted);">
+              {project.data.description}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              {project.data.tags.map(tag => (
+                <span
+                  class="text-xs px-3 py-1 rounded-full"
+                  style="background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border);"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
