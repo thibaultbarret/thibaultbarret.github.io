@@ -1,0 +1,37 @@
+---
+// src/components/Hero.astro
+---
+
+<section id="hero" class="min-h-screen flex items-center fade-in" style="background: var(--bg);">
+  <div class="max-w-5xl mx-auto px-6 py-24">
+    <div class="max-w-2xl">
+      <p class="text-sm font-medium mb-4 uppercase tracking-widest" style="color: var(--accent);">
+        Doctorant en mécanique
+      </p>
+      <h1 class="font-serif text-5xl font-bold leading-tight mb-6" style="color: var(--text);">
+        Thibault Barret
+      </h1>
+      <p class="text-xl leading-relaxed mb-10" style="color: var(--text-muted);">
+        Analyse inverse · Corrélation d'images numériques · Simulation FEMU
+      </p>
+      <div class="flex gap-4 flex-wrap">
+        <a
+          href="#research"
+          class="px-6 py-3 rounded font-medium transition-opacity hover:opacity-80"
+          style="background: var(--accent); color: #fff;"
+        >
+          Voir mes projets
+        </a>
+        <a
+          href="https://github.com/thibaultbarret"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-6 py-3 rounded font-medium transition-opacity hover:opacity-70"
+          style="border: 1px solid var(--border); color: var(--text);"
+        >
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
