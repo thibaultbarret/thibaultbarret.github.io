@@ -6,15 +6,24 @@ const experiences = [
     title: 'Doctorant',
     place: 'Institut de Recherche Dupuy de Lôme, UMR CNRS 6027, Université Bretagne Sud',
     description: "Identification inverse des paramètres matériaux de loi de comportement thermo-mécanique à partir d'essais hétérogènes et de méthode inverse.",
+    tags: ['Analyse inverse', 'FEMU', 'DIC', 'MFront', 'Python'],
   },
 ];
 
 const formations = [
   {
     period: '2019 – 2021',
-    title: 'Double Master Génie Mécanique et Matériaux | Mécanique, Matériaux et Génie Civil',
+    title: 'Master Génie Mécanique et Matériaux',
     place: 'Université Bretagne Sud',
     description: '',
+    tags: ['Mécanique des solides', 'Matériaux', 'Éléments finis'],
+  },
+  {
+    period: '2020 – 2021',
+    title: 'Master recherche Mécanique, Matériaux et Génie Civil',
+    place: 'Université Bretagne Sud - ENSTA Bretagne - INSA Rennes',
+    description: '',
+    tags: ['Mécanique des matériaux', 'Génie Civil', 'Recherche'],
   },
 ];
 
@@ -64,7 +73,19 @@ const competences: { categorie: string; tags: string[] }[] = [
               <p class="font-semibold mt-1" style="color: var(--text);">{exp.title}</p>
               <p class="text-sm mb-1" style="color: var(--accent);">{exp.place}</p>
               {exp.description && (
-                <p class="text-sm" style="color: var(--text-muted);">{exp.description}</p>
+                <p class="text-sm mb-2" style="color: var(--text-muted);">{exp.description}</p>
+              )}
+              {exp.tags && exp.tags.length > 0 && (
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  {exp.tags.map(tag => (
+                    <span
+                      class="text-xs px-2 py-0.5 rounded"
+                      style="background: var(--bg); color: var(--text-muted); border: 1px solid var(--border);"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               )}
             </li>
           ))}
@@ -83,6 +104,18 @@ const competences: { categorie: string; tags: string[] }[] = [
               <time class="text-xs font-mono" style="color: var(--text-muted);">{f.period}</time>
               <p class="font-semibold mt-1" style="color: var(--text);">{f.title}</p>
               <p class="text-sm" style="color: var(--accent);">{f.place}</p>
+              {f.tags && f.tags.length > 0 && (
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  {f.tags.map(tag => (
+                    <span
+                      class="text-xs px-2 py-0.5 rounded"
+                      style="background: var(--bg); color: var(--text-muted); border: 1px solid var(--border);"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </li>
           ))}
         </ol>
