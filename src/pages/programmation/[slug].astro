@@ -1,0 +1,126 @@
+---
+import { getCollection, render } from 'astro:content';
+import Nav from '../../components/Nav.astro';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('programming');
+  return projects.map(project => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+
+const statusStyle: Record<string, string> = {
+  'stable':   'background: #2d6a2d; color: #d4f4d4;',
+  'en cours': 'background: #6a4a1a; color: #f4dfa0;',
+};
+---
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={project.data.description} />
+    <title>{project.data.title} — Thibault Barret</title>
+  </head>
+  <body>
+    <Nav />
+    <main class="pt-16">
+      <section class="py-24" style="background: var(--bg);">
+        <div class="max-w-3xl mx-auto px-6">
+
+          <a
+            href="/programmation"
+            class="inline-flex items-center gap-2 text-sm mb-10 transition-opacity hover:opacity-70"
+            style="color: var(--text-muted);"
+          >
+            ← Retour aux projets
+          </a>
+
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <h1 class="font-serif text-4xl font-bold leading-tight" style="color: var(--text);">
+              {project.data.title}
+            </h1>
+            <span
+              class="text-xs font-medium px-3 py-1 rounded-full shrink-0 mt-2"
+              style={statusStyle[project.data.status]}
+            >
+              {project.data.status}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-8">
+            {project.data.tags.map(tag => (
+              <span
+                class="text-xs px-3 py-1 rounded-full"
+                style="background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border);"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {project.data.github && (
+            <a
+              href={project.data.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded text-sm font-medium mb-10 transition-opacity hover:opacity-70"
+              style="border: 1px solid var(--border); color: var(--text);"
+            >
+              GitHub →
+            </a>
+          )}
+
+          <div
+            class="prose max-w-none"
+            style="color: var(--text);"
+          >
+            <Content />
+          </div>
+
+        </div>
+      </section>
+    </main>
+    <footer class="py-6 text-center text-xs" style="color: var(--text-muted); border-top: 1px solid var(--border);">
+      © {new Date().getFullYear()} Thibault Barret
+    </footer>
+  </body>
+</html>
+
+<style>
+  .prose h2, .prose h3 {
+    font-family: 'Lora', Georgia, serif;
+    color: var(--text);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose p {
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+  .prose ul, .prose ol {
+    color: var(--text-muted);
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose li {
+    margin-bottom: 0.25rem;
+  }
+  .prose code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+    background: var(--bg-surface);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+  }
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+</style>
