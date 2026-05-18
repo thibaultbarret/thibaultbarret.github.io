@@ -1,0 +1,63 @@
+---
+// src/components/Programmation.astro
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('programming'))
+  .sort((a, b) => a.data.order - b.data.order);
+
+const statusStyle: Record<string, string> = {
+  'stable':    'background: #2d6a2d; color: #d4f4d4;',
+  'en cours':  'background: #6a4a1a; color: #f4dfa0;',
+};
+---
+
+<section id="programmation" class="py-24 fade-in" style="background: var(--bg-surface);">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Programmation</h2>
+    <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+    <div class="grid gap-8">
+      {projects.map(project => (
+        <article class="rounded-lg p-6" style="border: 1px solid var(--border); background: var(--bg);">
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <h3 class="font-serif text-xl font-semibold" style="color: var(--text);">
+              {project.data.title}
+            </h3>
+            <span
+              class="text-xs font-medium px-3 py-1 rounded-full shrink-0"
+              style={statusStyle[project.data.status]}
+            >
+              {project.data.status}
+            </span>
+          </div>
+
+          <p class="leading-relaxed mb-4" style="color: var(--text-muted);">
+            {project.data.description}
+          </p>
+
+          <div class="flex flex-wrap items-center gap-2">
+            {project.data.tags.map(tag => (
+              <span
+                class="text-xs px-3 py-1 rounded-full"
+                style="background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border);"
+              >
+                {tag}
+              </span>
+            ))}
+            {project.data.github && (
+              <a
+                href={project.data.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ml-auto text-xs font-medium px-4 py-1.5 rounded transition-opacity hover:opacity-70"
+                style="border: 1px solid var(--border); color: var(--text);"
+              >
+                GitHub →
+              </a>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

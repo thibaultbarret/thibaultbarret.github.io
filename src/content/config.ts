@@ -36,4 +36,16 @@ const chapters = defineCollection({
   }),
 });
 
-export const collections = { projects, publications, chapters };
+const programming = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title:       z.string(),
+    description: z.string(),
+    status:      z.enum(['stable', 'en cours']),
+    tags:        z.array(z.string()),
+    github:      z.string().optional(),
+    order:       z.number(),
+  }),
+});
+
+export const collections = { projects, publications, chapters, programming };
