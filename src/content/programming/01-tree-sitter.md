@@ -14,19 +14,31 @@ de code compatibles avec Tree-sitter (comme Neovim, Atom, VsCode etc.).
 Les inclusions de `C++` sont traités par injections, ce qui permet de bénéficier
 de la coloration syntaxique et de l'analyse structurelle du code `C++` dans les fichiers `MFront` et `MTest`.
 
-# MFront
+# Avancement du projet
 
-Pour le moment, les mots clés des DSL suivant sont supportés:
+## MFront
+
+Pour le moment, les mots clés des `@DSL` suivant sont supportés :
 
 - **MaterialProperty**
 - **MaterialLaw**
 - **Model**
-- **IsotropicPlasticMisesFlow**
 
-# MTest
+Les `@DSL` suivants sont en cours de développement :
+
+- **IsotropicPlasticMisesFlow**
+- **Implicit**
+
+## MTest
 
 L'ensemble des mots clés de `MTest` est supporté.
 
 Dans l'éditeur de code `Neovim`, elle permet d'obtenir la coloration syntaxique suivante :
 
 ![MTest Tree-sitter](screenshot_nvim_mtest.png)
+
+# Installation du parser
+
+## Neovim
+
+### Compilation du parser
