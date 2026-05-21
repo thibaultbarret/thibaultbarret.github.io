@@ -57,7 +57,97 @@ body {
   animation: fadeInUp 0.5s ease forwards;
 }
 
-/* Équations LaTeX en SVG — inversion en dark mode */
+/* ── Tree-sitter syntax highlighting ─────────────────────────────────────── */
+
+/* Conteneur */
+.ts-pre {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.ts-code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text);
+}
+
+/* Catppuccin Latte (light) — miroir exact de la config Neovim */
+:root {
+  --ts-comment:     #8c8fa1;  /* overlay1 */
+  --ts-string:      #40a02b;  /* green */
+  --ts-string-sp:   #179299;  /* teal */
+  --ts-keyword:     #8839ef;  /* mauve */
+  --ts-kw-op:       #04a5e5;  /* sky */
+  --ts-number:      #fe640b;  /* peach */
+  --ts-type:        #df8e1d;  /* yellow */
+  --ts-type-bi:     #df8e1d;  /* yellow */
+  --ts-type-def:    #df8e1d;  /* yellow */
+  --ts-variable:    #4c4f69;  /* text */
+  --ts-var-bi:      #d20f39;  /* red */
+  --ts-function:    #1e66f5;  /* blue */
+  --ts-constant:    #fe640b;  /* peach */
+  --ts-const-bi:    #fe640b;  /* peach */
+  --ts-boolean:     #fe640b;  /* peach */
+  --ts-property:    #179299;  /* teal */
+  --ts-label:       #209fb5;  /* sapphire */
+  --ts-punct:       #9ca0b0;  /* overlay2 */
+}
+
+/* Catppuccin Mocha (dark) — miroir exact de la config Neovim */
+.dark {
+  --ts-comment:     #7f849c;  /* overlay1 */
+  --ts-string:      #a6e3a1;  /* green */
+  --ts-string-sp:   #94e2d5;  /* teal */
+  --ts-keyword:     #cba6f7;  /* mauve */
+  --ts-kw-op:       #89dceb;  /* sky */
+  --ts-number:      #fab387;  /* peach */
+  --ts-type:        #f9e2af;  /* yellow */
+  --ts-type-bi:     #f9e2af;  /* yellow */
+  --ts-type-def:    #f9e2af;  /* yellow */
+  --ts-variable:    #cdd6f4;  /* text */
+  --ts-var-bi:      #f38ba8;  /* red */
+  --ts-function:    #89b4fa;  /* blue */
+  --ts-constant:    #fab387;  /* peach */
+  --ts-const-bi:    #fab387;  /* peach */
+  --ts-boolean:     #fab387;  /* peach */
+  --ts-property:    #94e2d5;  /* teal */
+  --ts-label:       #74c7ec;  /* sapphire */
+  --ts-punct:       #9399b2;  /* overlay2 */
+}
+
+/* Mapping captures → couleurs + styles (fidèles à la config Neovim/FiraCode) */
+.ts-comment                 { color: var(--ts-comment); font-style: italic; }
+.ts-string                  { color: var(--ts-string); font-style: italic; }
+.ts-string-special          { color: var(--ts-string-sp); font-style: italic; }
+.ts-keyword-directive       { color: var(--ts-keyword); font-weight: bold; }
+.ts-keyword-operator        { color: var(--ts-kw-op); font-weight: bold; }
+.ts-number,
+.ts-number-float            { color: var(--ts-number); font-weight: bold; }
+.ts-type                    { color: var(--ts-type); font-weight: bold; font-style: italic; }
+.ts-type-builtin            { color: var(--ts-type-bi); font-weight: bold; }
+.ts-type-definition         { color: var(--ts-type-def); font-weight: bold; font-style: italic; }
+.ts-variable                { color: var(--ts-variable); }
+.ts-variable-builtin        { color: var(--ts-var-bi); font-style: italic; }
+.ts-function,
+.ts-function-method         { color: var(--ts-function); font-weight: bold; }
+.ts-constant                { color: var(--ts-constant); font-weight: bold; }
+.ts-constant-builtin        { color: var(--ts-const-bi); font-weight: bold; font-style: italic; }
+.ts-boolean                 { color: var(--ts-boolean); font-weight: bold; font-style: italic; }
+.ts-property                { color: var(--ts-property); font-style: italic; }
+.ts-label                   { color: var(--ts-label); }
+.ts-punctuation-delimiter   { color: var(--ts-punct); }
+.ts-punctuation-bracket     { color: var(--ts-punct); font-weight: bold; }
+
+/* ── Équations LaTeX en SVG — inversion en dark mode ─────────────────────── */
 .math-svg {
   display: block;
   max-width: 100%;

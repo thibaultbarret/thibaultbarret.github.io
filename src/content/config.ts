@@ -6,9 +6,11 @@ const projects = defineCollection({
   schema: z.object({
     title:       z.string(),
     description: z.string(),
-    figure:      z.string().optional(),  // nom du fichier dans public/figures/
+    figure:      z.string().optional(),
     tags:        z.array(z.string()),
     order:       z.number(),
+    status:      z.enum(['stable', 'en cours']).optional(),
+    show:        z.boolean().default(true),
   }),
 });
 
