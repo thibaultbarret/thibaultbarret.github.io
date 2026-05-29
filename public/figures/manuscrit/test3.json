@@ -1,0 +1,29 @@
+{
+    "dic": {
+        "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/coordonnees_subsets_mm.npy",
+        "triangulation": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/subset_triangulation.npy",
+        "displacements": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/deplacements_cin.npy"
+    },
+    "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/deformations_cin.npy",
+    "fields_config": [
+        { "index": 0, "name": "ε_xx" },
+        { "index": 1, "name": "ε_yy" },
+        { "index": 2, "name": "ε_xy" }
+    ],
+    "cmap": "jet",
+    "n_colors": 10,
+    "opacity": 0.8,
+    "label_format": ".3f",
+    "steps": [
+        { "step": 0 },
+        { "step": 1 },
+        { "step": 2 },
+        { "step": 3 },
+        { "step": 4 },
+        { "step": 5 },
+        { "step": 6 },
+        { "step": 7 },
+        { "step": 8 },
+        { "step": 9 }
+    ]
+}

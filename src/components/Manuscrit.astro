@@ -1,6 +1,7 @@
 ---
 // src/components/Manuscrit.astro
 import { getCollection } from 'astro:content';
+import VtkFigure from './VtkFigure.astro';
 
 const chapters = (await getCollection('chapters'))
   .sort((a, b) => a.data.order - b.data.order);
@@ -28,22 +29,39 @@ const chapters = (await getCollection('chapters'))
                 Aucune figure pour ce chapitre.
               </p>
             ) : (
-              chapter.data.figures.map(fig => (
-                <figure>
-                  <iframe
-                    src={`/figures/manuscrit/${fig.filename}`}
-                    width="100%"
-                    height="450"
-                    loading="lazy"
-                    title={fig.title}
-                    class="block rounded"
-                    style="border: 1px solid var(--border);"
-                  />
-                  <figcaption class="mt-3 text-sm text-center" style="color: var(--text-muted);">
-                    {fig.title}
-                  </figcaption>
-                </figure>
-              ))
+              chapter.data.figures.map((fig, i) => {
+                const ext = fig.filename.split('.').pop();
+                const isVtk = ext === 'json';
+                const isJs  = ext === 'js';
+                const id    = `fig-${chapter.data.order}-${i}`;
+                return (
+                  <figure>
+                    {isVtk ? (
+                      <VtkFigure src={`/figures/manuscrit/${fig.filename}`} />
+                    ) : isJs ? (
+                      <div
+                        id={id}
+                        class="block rounded"
+                        style="border: 1px solid var(--border); min-height: 450px;"
+                      />
+                      <script src={`/figures/manuscrit/${fig.filename}`} data-target={id} />
+                    ) : (
+                      <iframe
+                        src={`/figures/manuscrit/${fig.filename}`}
+                        width="100%"
+                        height="450"
+                        loading="lazy"
+                        title={fig.title}
+                        class="block rounded"
+                        style="border: 1px solid var(--border);"
+                      />
+                    )}
+                    <figcaption class="mt-3 text-sm text-center" style="color: var(--text-muted);">
+                      {fig.title}
+                    </figcaption>
+                  </figure>
+                );
+              })
             )}
           </div>
         </details>
