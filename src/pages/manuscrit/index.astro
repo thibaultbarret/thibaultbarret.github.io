@@ -18,6 +18,7 @@ function extractSections(body: string): { text: string; slug: string; level: num
 }
 
 const chapters = (await getCollection('chapters'))
+  .filter(c => c.data.show)
   .sort((a, b) => a.data.order - b.data.order);
 ---
 <html lang="fr">

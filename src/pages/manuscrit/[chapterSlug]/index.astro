@@ -51,7 +51,7 @@ async function parseBody(body: string): Promise<Segment[]> {
 
 export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
-  const sorted = chapters.sort((a, b) => a.data.order - b.data.order);
+  const sorted = chapters.filter(c => c.data.show).sort((a, b) => a.data.order - b.data.order);
   return sorted.map((chapter, i) => ({
     params: { chapterSlug: chapter.id.replace(/\.md$/, '') },
     props: { chapter, prevChapter: sorted[i - 1] ?? null, nextChapter: sorted[i + 1] ?? null },

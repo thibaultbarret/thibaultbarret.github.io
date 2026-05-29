@@ -8,7 +8,7 @@ import VtkFigure3D from '../../../components/VtkFigure3D.astro';
 import '../../../styles/global.css';
 
 export async function getStaticPaths() {
-  const chapters = await getCollection('chapters');
+  const chapters = (await getCollection('chapters')).filter(c => c.data.show);
   return chapters.flatMap(chapter =>
     chapter.data.figures.map((fig, i) => ({
       params: { chapterSlug: chapter.id.replace(/\.md$/, ''), figIndex: String(i) },

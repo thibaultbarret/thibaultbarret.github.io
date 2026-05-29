@@ -31,6 +31,7 @@ const chapters = defineCollection({
   schema: z.object({
     title:  z.string(),
     order:  z.number(),
+    show:   z.boolean().default(true),
     description: z.string().optional(),
     figures: z.array(z.object({
       filename: z.string(),
