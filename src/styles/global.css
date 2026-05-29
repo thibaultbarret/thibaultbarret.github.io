@@ -21,6 +21,8 @@
   --accent:      #8839ef;
   --border:      #ccd0da;
   --heading-2:   #1e66f5;  /* Catppuccin Latte Blue */
+  --heading-3:   #209fb5;  /* Catppuccin Latte Sapphire */
+  --heading-4:   #179299;  /* Catppuccin Latte Teal */
 }
 
 /* Catppuccin Mocha (dark) */
@@ -32,6 +34,8 @@
   --accent:      #cba6f7;
   --border:      #45475a;
   --heading-2:   #89b4fa;  /* Catppuccin Mocha Blue */
+  --heading-3:   #74c7ec;  /* Catppuccin Mocha Sapphire */
+  --heading-4:   #94e2d5;  /* Catppuccin Mocha Teal */
 }
 
 html {
