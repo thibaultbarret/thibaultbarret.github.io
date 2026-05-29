@@ -20,6 +20,7 @@
   --text-muted:  #6c6f85;
   --accent:      #8839ef;
   --border:      #ccd0da;
+  --heading-2:   #1e66f5;  /* Catppuccin Latte Blue */
 }
 
 /* Catppuccin Mocha (dark) */
@@ -30,6 +31,7 @@
   --text-muted:  #a6adc8;
   --accent:      #cba6f7;
   --border:      #45475a;
+  --heading-2:   #89b4fa;  /* Catppuccin Mocha Blue */
 }
 
 html {
