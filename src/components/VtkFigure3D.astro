@@ -128,4 +128,67 @@ function drawColorbar(container: HTMLElement, name: string, stops: [number,numbe
     labels.appendChild(s);
   }
 }
+
+// ── Constructeurs de maillage ─────────────────────────────────────────────
+
+function buildPositions3D(coords: NpyArray, disp: NpyArray | null, stepIdx: number): Float32Array {
+  const N = coords.shape[0];
+  const pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    let x = idx(coords.data, coords.shape, i, 0);
+    let y = idx(coords.data, coords.shape, i, 1);
+    let z = idx(coords.data, coords.shape, i, 2);
+    if (disp) {
+      x += disp.shape.length === 3 ? idx(disp.data, disp.shape, i, 0, stepIdx) : idx(disp.data, disp.shape, i, 0);
+      y += disp.shape.length === 3 ? idx(disp.data, disp.shape, i, 1, stepIdx) : idx(disp.data, disp.shape, i, 1);
+      z += disp.shape.length === 3 ? idx(disp.data, disp.shape, i, 2, stepIdx) : idx(disp.data, disp.shape, i, 2);
+    }
+    pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+  }
+  return pos;
+}
+
+function makeTriangleCells(triangles: NpyArray): Uint32Array {
+  const T = triangles.shape[0];
+  const buf = new Uint32Array(T * 4);
+  for (let t = 0; t < T; t++) {
+    buf[t*4]   = 3;
+    buf[t*4+1] = idx(triangles.data, triangles.shape, t, 0);
+    buf[t*4+2] = idx(triangles.data, triangles.shape, t, 1);
+    buf[t*4+3] = idx(triangles.data, triangles.shape, t, 2);
+  }
+  return buf;
+}
+
+function makeQuadCells(connectivity: NpyArray): Uint32Array {
+  const E = connectivity.shape[0];
+  const buf = new Uint32Array(E * 5);
+  for (let e = 0; e < E; e++) {
+    buf[e*5]   = 4;
+    buf[e*5+1] = idx(connectivity.data, connectivity.shape, e, 0);
+    buf[e*5+2] = idx(connectivity.data, connectivity.shape, e, 1);
+    buf[e*5+3] = idx(connectivity.data, connectivity.shape, e, 2);
+    buf[e*5+4] = idx(connectivity.data, connectivity.shape, e, 3);
+  }
+  return buf;
+}
+
+function buildScalars(fields: NpyArray, stepIdx: number, fieldIdx: number): Float32Array {
+  const N = fields.shape[0];
+  const out = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    out[i] = fields.shape.length === 3 ? idx(fields.data, fields.shape, i, fieldIdx, stepIdx)
+           : fields.shape.length === 2 ? idx(fields.data, fields.shape, i, fieldIdx)
+           : (fields.data[i] as number);
+  }
+  return out;
+}
+
+function fieldRange(sc: Float32Array): [number, number] {
+  let vmin = Infinity, vmax = -Infinity;
+  for (let i = 0; i < sc.length; i++) {
+    if (isFinite(sc[i])) { vmin = Math.min(vmin, sc[i]); vmax = Math.max(vmax, sc[i]); }
+  }
+  return [vmin, vmax];
+}
 </script>
