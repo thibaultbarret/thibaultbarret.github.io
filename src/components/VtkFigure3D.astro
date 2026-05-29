@@ -370,9 +370,11 @@ async function initVtk3D(container: HTMLElement) {
 
   // ── Rendu ─────────────────────────────────────────────────────────────
   let currentSliderPos = 0;
+  let lastStepIdx = -1;
 
   async function render(stepPos: number, fieldIdx: number) {
     const stepIdx = steps.length > 0 ? steps[stepPos].step : 0;
+    const positionsChanged = stepIdx !== lastStepIdx;
 
     if (dicPd && dicMesh) {
       dicPd.pts.setData(buildPositions3D(dicMesh.coords, dicMesh.disp, stepIdx), 3);
@@ -401,6 +403,7 @@ async function initVtk3D(container: HTMLElement) {
     }
 
     if (hasText) textContent.innerHTML = steps[stepPos]?.text ?? '';
+    if (positionsChanged) { renderer.resetCamera(); lastStepIdx = stepIdx; }
     renWin.render();
   }
 
