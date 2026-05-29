@@ -63,7 +63,7 @@ import vtkDataArray                     from '@kitware/vtk.js/Common/Core/DataAr
 import vtkPoints                        from '@kitware/vtk.js/Common/Core/Points';
 import vtkCellArray                     from '@kitware/vtk.js/Common/Core/CellArray';
 import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style/InteractorStyleTrackballCamera';
-import vtkCellPicker                    from '@kitware/vtk.js/Rendering/Core/CellPicker';
+import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -466,30 +466,36 @@ async function initVtk3D(container: HTMLElement) {
   // ── Tooltip valeur scalaire ───────────────────────────────────────────
   if (hasSca && activePd.scalarsArr) {
     const tooltip = container.querySelector<HTMLElement>('.vtk3d-tooltip')!;
-    const picker  = vtkCellPicker.newInstance();
-    picker.setTolerance(0.005);
+    const picker  = vtkPointPicker.newInstance();
+    picker.setTolerance(0.01);
 
+    // Coordonnées CSS pour positionner le tooltip dans le DOM
+    let cssX = 0, cssY = 0;
     canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
       const rect = canvasEl.getBoundingClientRect();
-      // VTK.js attend des coordonnées canvas avec Y inversé
-      const x = e.clientX - rect.left;
-      const y = rect.height - (e.clientY - rect.top);
-      picker.pick([x, y, 0], renderer);
+      cssX = e.clientX - rect.left;
+      cssY = e.clientY - rect.top;
+    });
+    canvasEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+    // L'interacteur fournit des coordonnées déjà converties (devicePixelRatio, Y-flip)
+    rw.getInteractor().onMouseMove((callData: any) => {
+      const pos = callData.position;
+      picker.pick([pos.x, pos.y, 0], renderer);
       const ptId = picker.getPointId();
       if (ptId >= 0 && ptId < activePd.scalarsArr.getNumberOfTuples()) {
         const val = activePd.scalarsArr.getValue(ptId);
-        tooltip.textContent = formatValue(val, label_format);
-        tooltip.style.display = 'block';
-        // Positionne le tooltip près du curseur, en restant dans le canvas
-        const tx = Math.min(e.clientX - rect.left + 12, rect.width - 80);
-        const ty = Math.max(e.clientY - rect.top - 28, 4);
-        tooltip.style.left = `${tx}px`;
-        tooltip.style.top  = `${ty}px`;
-      } else {
-        tooltip.style.display = 'none';
+        if (isFinite(val)) {
+          tooltip.textContent = formatValue(val, label_format);
+          tooltip.style.display = 'block';
+          const rect = canvasEl.getBoundingClientRect();
+          tooltip.style.left = `${Math.min(cssX + 12, rect.width - 90)}px`;
+          tooltip.style.top  = `${Math.max(cssY - 28, 4)}px`;
+          return;
+        }
       }
+      tooltip.style.display = 'none';
     });
-    canvasEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
   }
 }
 
