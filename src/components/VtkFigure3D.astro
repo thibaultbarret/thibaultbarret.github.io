@@ -47,5 +47,85 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 </div>
 
 <script>
-// placeholder
+import '@kitware/vtk.js/Rendering/Profiles/Geometry';
+
+// ── Colormaps ─────────────────────────────────────────────────────────────
+const CMAPS: Record<string, [number,number,number,number][]> = {
+  viridis:  [[0,.267,.005,.329],[.25,.282,.341,.631],[.5,.129,.569,.553],[.75,.369,.788,.384],[1,.993,.906,.144]],
+  RdYlGn_r: [[0,.694,.004,.149],[.25,.992,.682,.380],[.5,1,1,.749],[.75,.549,.769,.290],[1,.165,.373,.165]],
+  coolwarm: [[0,.230,.299,.754],[.5,.865,.865,.865],[1,.706,.016,.150]],
+  jet:      [[0,0,0,.5],[.125,0,0,1],[.375,0,1,1],[.625,1,1,0],[.875,1,0,0],[1,.5,0,0]],
+};
+
+function interpolateCmap(stops: [number,number,number,number][], t: number): [number,number,number,number] {
+  for (let i = 1; i < stops.length; i++) {
+    if (t <= stops[i][0]) {
+      const f = (t - stops[i-1][0]) / (stops[i][0] - stops[i-1][0]);
+      return [t, ...([1,2,3] as const).map(k => stops[i-1][k] + (stops[i][k] - stops[i-1][k]) * f)] as any;
+    }
+  }
+  return stops.at(-1)!;
+}
+
+// ── Parser .npy ───────────────────────────────────────────────────────────
+interface NpyArray { data: ArrayLike<number>; shape: number[] }
+
+async function fetchNpy(url: string): Promise<NpyArray> {
+  const buf   = await fetch(url).then(r => r.arrayBuffer());
+  const bytes = new Uint8Array(buf);
+  const major = bytes[6];
+  const hlen  = major === 1 ? (bytes[8] | bytes[9] << 8) : (bytes[8] | bytes[9]<<8 | bytes[10]<<16 | bytes[11]<<24);
+  const hOff  = (major === 1 ? 10 : 12);
+  const header = new TextDecoder().decode(bytes.slice(hOff, hOff + hlen));
+  const dtype  = (header.match(/'descr'\s*:\s*'([^']+)'/) ?? ['','<f8'])[1];
+  const shape  = (header.match(/'shape'\s*:\s*\(([^)]*)\)/) ?? ['',''])[1]
+    .split(',').map(s => s.trim()).filter(Boolean).map(Number);
+  const raw = buf.slice(hOff + hlen);
+  let data: ArrayLike<number>;
+  if      (dtype.endsWith('f8')) data = new Float64Array(raw);
+  else if (dtype.endsWith('f4')) data = new Float32Array(raw);
+  else if (dtype.endsWith('i4') || dtype.endsWith('u4')) data = new Int32Array(raw);
+  else if (dtype.endsWith('i8') || dtype.endsWith('u8')) { const b = new BigInt64Array(raw); data = Int32Array.from(b, v => Number(v)); }
+  else if (dtype.endsWith('i2') || dtype.endsWith('u2')) data = new Int16Array(raw);
+  else data = new Float64Array(raw);
+  return { data, shape };
+}
+
+function idx(arr: ArrayLike<number>, shape: number[], ...ix: number[]) {
+  let o = 0, s = 1;
+  for (let i = shape.length - 1; i >= 0; i--) { o += (ix[i] ?? 0) * s; s *= shape[i]; }
+  return arr[o] as number;
+}
+
+function formatValue(v: number, fmt: string): string {
+  const m = fmt.match(/^\.(\d+)([efg])$/);
+  if (!m) return String(v);
+  const n = parseInt(m[1]);
+  if (m[2] === 'e') return v.toExponential(n);
+  if (m[2] === 'f') return v.toFixed(n);
+  return v.toPrecision(n);
+}
+
+function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string) {
+  const title  = container.querySelector<HTMLElement>('.vtk3d-cb-title')!;
+  const canvas = container.querySelector<HTMLCanvasElement>('.vtk3d-cb-canvas')!;
+  const labels = container.querySelector<HTMLElement>('.vtk3d-cb-labels')!;
+  labels.innerHTML = '';
+  title.textContent = name;
+  const ctx = canvas.getContext('2d')!;
+  const bandH = 200 / nColors;
+  for (let i = 0; i < nColors; i++) {
+    const t = (nColors - 1 - i + 0.5) / nColors;
+    const [, r, g, b] = interpolateCmap(stops, t);
+    ctx.fillStyle = `rgb(${(r*255)|0},${(g*255)|0},${(b*255)|0})`;
+    ctx.fillRect(0, Math.floor(i * bandH), 16, Math.ceil(bandH) + 1);
+  }
+  for (let i = 0; i <= nColors; i++) {
+    const v = vmin + (vmax - vmin) * (1 - i / nColors);
+    const s = document.createElement('span');
+    s.style.cssText = `position:absolute;top:${i * 200 / nColors}px;right:0;transform:translateY(-50%);color:#a6adc8;font:10px monospace;text-align:right;white-space:nowrap;`;
+    s.textContent = formatValue(v, labelFmt);
+    labels.appendChild(s);
+  }
+}
 </script>
