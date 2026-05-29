@@ -32,7 +32,7 @@ let isVtk3D = false;
 let isVtk   = false;
 if (ext === 'json') {
   try {
-    const jsonPath = path.join(process.cwd(), 'public', 'data', fig.filename);
+    const jsonPath = path.join(process.cwd(), 'public', 'figures', 'manuscrit', fig.filename);
     const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     isVtk3D = !!(json.dic || json.fe);
     isVtk   = !isVtk3D;
@@ -69,10 +69,10 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
 
         <!-- Figure -->
         {isVtk && (
-          <VtkFigure src={`/data/${fig.filename}`} height="calc(100vh - 260px)" />
+          <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
         )}
         {isVtk3D && (
-          <VtkFigure3D src={`/data/${fig.filename}`} height="calc(100vh - 260px)" />
+          <VtkFigure3D src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
         )}
         {isJs && (
           <>
@@ -81,12 +81,12 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
               class="block rounded"
               style="border: 1px solid var(--border); min-height: 600px;"
             />
-            <script src={`/data/${fig.filename}`} data-target={figId} />
+            <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
           </>
         )}
         {!isVtk && !isJs && (
           <iframe
-            src={`/data/${fig.filename}`}
+            src={`/figures/manuscrit/${fig.filename}`}
             width="100%"
             height="600"
             loading="lazy"
