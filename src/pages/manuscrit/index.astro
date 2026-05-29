@@ -4,12 +4,17 @@ import Nav from '../../components/Nav.astro';
 import '../../styles/global.css';
 import GithubSlugger from 'github-slugger';
 
-function extractSections(body: string): { text: string; slug: string }[] {
+function extractSections(body: string): { text: string; slug: string; level: number }[] {
   const slugger = new GithubSlugger();
-  return body
-    .split('\n')
-    .filter(line => line.startsWith('## '))
-    .map(line => ({ text: line.slice(3).trim(), slug: slugger.slug(line.slice(3).trim()) }));
+  const sections: { text: string; slug: string; level: number }[] = [];
+  for (const line of body.split('\n')) {
+    const m = line.match(/^(#{1,3}) (.+)/);
+    if (m) {
+      const text = m[2].trim();
+      sections.push({ text, slug: slugger.slug(text), level: m[1].length });
+    }
+  }
+  return sections;
 }
 
 const chapters = (await getCollection('chapters'))
@@ -53,7 +58,7 @@ const chapters = (await getCollection('chapters'))
                 {sections.length > 0 && (
                   <ul class="space-y-1">
                     {sections.map(s => (
-                      <li>
+                      <li style={`padding-left: ${(s.level - 1) * 0.75}rem`}>
                         <a
                           href={`/manuscrit/${slug}#${s.slug}`}
                           class="text-sm hover:opacity-80 transition-opacity"
