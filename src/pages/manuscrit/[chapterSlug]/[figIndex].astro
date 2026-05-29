@@ -1,0 +1,162 @@
+---
+import { getCollection } from 'astro:content';
+import fs from 'node:fs';
+import path from 'node:path';
+import Nav from '../../../components/Nav.astro';
+import VtkFigure from '../../../components/VtkFigure.astro';
+import VtkFigure3D from '../../../components/VtkFigure3D.astro';
+import '../../../styles/global.css';
+
+export async function getStaticPaths() {
+  const chapters = await getCollection('chapters');
+  return chapters.flatMap(chapter =>
+    chapter.data.figures.map((fig, i) => ({
+      params: { chapterSlug: chapter.id.replace(/\.md$/, ''), figIndex: String(i) },
+      props: { chapter, fig, figIndex: i, totalFigs: chapter.data.figures.length },
+    }))
+  );
+}
+
+const { chapter, fig, figIndex, totalFigs } = Astro.props;
+const { chapterSlug } = Astro.params;
+
+const { Content } = await chapter.render();
+const hasContent = chapter.body?.trim().length > 0;
+
+const ext = fig.filename.split('.').pop();
+const isJs  = ext === 'js';
+const figId = `fig-${figIndex}`;
+
+// Détecte si le JSON est une figure 3D (clé `dic` ou `fe` au top level)
+let isVtk3D = false;
+let isVtk   = false;
+if (ext === 'json') {
+  try {
+    const jsonPath = path.join(process.cwd(), 'public', 'figures', 'manuscrit', fig.filename);
+    const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    isVtk3D = !!(json.dic || json.fe);
+    isVtk   = !isVtk3D;
+  } catch {
+    isVtk = true;
+  }
+}
+
+const prevIdx = figIndex > 0 ? figIndex - 1 : null;
+const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
+---
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={fig.title} />
+    <title>{fig.title} — Manuscrit</title>
+  </head>
+  <body>
+    <Nav />
+    <main class="pt-16">
+      <div class="max-w-6xl mx-auto px-6 py-8">
+
+        <!-- Fil d'Ariane -->
+        <nav class="flex items-center gap-2 text-xs mb-6" style="color: var(--text-muted);">
+          <a href="/manuscrit" style="color: var(--accent); text-decoration: none;" class="hover:opacity-80">Manuscrit</a>
+          <span>›</span>
+          <span>Chapitre {chapter.data.order} — {chapter.data.title}</span>
+        </nav>
+
+        <!-- Titre -->
+        <h1 class="font-serif text-2xl font-semibold mb-6" style="color: var(--text);">{fig.title}</h1>
+
+        <!-- Figure -->
+        {isVtk && (
+          <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+        )}
+        {isVtk3D && (
+          <VtkFigure3D src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+        )}
+        {isJs && (
+          <>
+            <div
+              id={figId}
+              class="block rounded"
+              style="border: 1px solid var(--border); min-height: 600px;"
+            />
+            <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
+          </>
+        )}
+        {!isVtk && !isJs && (
+          <iframe
+            src={`/figures/manuscrit/${fig.filename}`}
+            width="100%"
+            height="600"
+            loading="lazy"
+            title={fig.title}
+            class="block rounded"
+            style="border: 1px solid var(--border);"
+          />
+        )}
+
+        <!-- Contexte du chapitre -->
+        {hasContent && (
+          <div class="mt-10 pt-8" style="border-top: 1px solid var(--border);">
+            <h2 class="font-serif text-lg font-semibold mb-4" style="color: var(--text-muted);">
+              Chapitre {chapter.data.order} — {chapter.data.title}
+            </h2>
+            <div class="prose-manuscrit">
+              <Content />
+            </div>
+          </div>
+        )}
+
+        <!-- Navigation précédent / suivant -->
+        <div class="flex justify-between mt-8">
+          {prevIdx !== null ? (
+            <a
+              href={`/manuscrit/${chapterSlug}/${prevIdx}`}
+              class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
+              style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
+            >
+              ← {chapter.data.figures[prevIdx].title}
+            </a>
+          ) : <span />}
+          {nextIdx !== null ? (
+            <a
+              href={`/manuscrit/${chapterSlug}/${nextIdx}`}
+              class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
+              style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
+            >
+              {chapter.data.figures[nextIdx].title} →
+            </a>
+          ) : <span />}
+        </div>
+      </div>
+    </main>
+    <footer class="py-6 text-center text-xs" style="color: var(--text-muted); border-top: 1px solid var(--border);">
+      © {new Date().getFullYear()} Thibault Barret
+    </footer>
+  </body>
+</html>
+
+<style>
+  .prose-manuscrit {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.75;
+    max-width: 72ch;
+  }
+  .prose-manuscrit p        { margin-bottom: 1em; }
+  .prose-manuscrit h1,
+  .prose-manuscrit h2,
+  .prose-manuscrit h3       { font-family: serif; font-weight: 600; margin: 1.5em 0 0.5em; color: var(--text); }
+  .prose-manuscrit h2       { font-size: 1.15rem; }
+  .prose-manuscrit h3       { font-size: 1rem; }
+  .prose-manuscrit ul,
+  .prose-manuscrit ol       { padding-left: 1.5em; margin-bottom: 1em; }
+  .prose-manuscrit li       { margin-bottom: 0.25em; }
+  .prose-manuscrit code     { font-size: 0.85em; background: var(--bg-surface); padding: 0.1em 0.4em; border-radius: 3px; }
+  .prose-manuscrit pre      { background: var(--bg-surface); padding: 1em; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+  .prose-manuscrit pre code { background: none; padding: 0; }
+  .prose-manuscrit strong   { font-weight: 600; }
+  .prose-manuscrit em       { font-style: italic; color: var(--text-muted); }
+  .prose-manuscrit a        { color: var(--accent); text-decoration: underline; }
+</style>
