@@ -70,6 +70,7 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
       <button class="vtk-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
       <button class="vtk-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
       <input  class="vtk-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
+      <datalist class="vtk-datalist"></datalist>
       <span   class="vtk-label"  style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
     </div>
 
@@ -448,6 +449,16 @@ async function initVtk(container: HTMLElement) {
   if (steps.length > 1) {
     controls.style.display = 'flex';
     slider.max = String(steps.length - 1);
+    // Graduations
+    const datalist = container.querySelector<HTMLDataListElement>('.vtk-datalist')!;
+    const listId = 'vtk-dl-' + Math.random().toString(36).slice(2);
+    datalist.id = listId;
+    slider.setAttribute('list', listId);
+    for (let i = 0; i < steps.length; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      datalist.appendChild(opt);
+    }
     slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
     firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
     prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos - 1); });
