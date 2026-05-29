@@ -61,7 +61,7 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
         <nav class="flex items-center gap-2 text-xs mb-6" style="color: var(--text-muted);">
           <a href="/manuscrit" style="color: var(--accent); text-decoration: none;" class="hover:opacity-80">Manuscrit</a>
           <span>›</span>
-          <span>Chapitre {chapter.data.order} — {chapter.data.title}</span>
+          <a href={`/manuscrit/${chapterSlug}`} style="color: var(--accent); text-decoration: none;" class="hover:opacity-80">Chapitre {chapter.data.order} — {chapter.data.title}</a>
         </nav>
 
         <!-- Titre -->
