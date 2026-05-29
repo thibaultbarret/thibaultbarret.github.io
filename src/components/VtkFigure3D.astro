@@ -254,7 +254,7 @@ async function initVtk3D(container: HTMLElement) {
   const hasSca = !dualMode && !!fieldsArr;
   if (!hasSca) {
     container.querySelector<HTMLCanvasElement>('.vtk3d-cb-canvas')!.style.display = 'none';
-    (container.querySelector<HTMLElement>('.vtk3d-cb-title')! as HTMLElement).style.display = 'none';
+    container.querySelector<HTMLElement>('.vtk3d-cb-title')!.style.display = 'none';
     container.querySelector<HTMLElement>('.vtk3d-cb-labels')!.style.display = 'none';
   }
   const lut    = vtkColorTransferFunction.newInstance();
