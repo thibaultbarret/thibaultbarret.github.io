@@ -59,6 +59,9 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Bouton reset vue -->
     <button class="vtk-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
 
+    <!-- Tooltip valeur scalaire -->
+    <div class="vtk-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
+
     <!-- Contrôles slider -->
     <div class="vtk-controls" style="display:none;position:absolute;bottom:0;left:0;right:90px;padding:8px 12px;background:rgba(24,24,37,.85);z-index:10;align-items:center;gap:6px;">
       <button class="vtk-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
@@ -93,6 +96,7 @@ import vtkDataArray             from '@kitware/vtk.js/Common/Core/DataArray';
 import vtkPoints                from '@kitware/vtk.js/Common/Core/Points';
 import vtkCellArray             from '@kitware/vtk.js/Common/Core/CellArray';
 import vtkInteractorStyleManipulator    from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
+import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
 import vtkMouseCameraTrackballPanManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
 import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 
@@ -461,6 +465,35 @@ async function initVtk(container: HTMLElement) {
   resetBtn.addEventListener('click', () => {
     renderer.resetCamera();
     renWin.render();
+  });
+
+  // ── Tooltip valeur scalaire ───────────────────────────────────────────
+  const tooltip = container.querySelector<HTMLElement>('.vtk-tooltip')!;
+  const picker  = vtkPointPicker.newInstance();
+  picker.setTolerance(0.01);
+  let cssX = 0, cssY = 0;
+  canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
+    const rect = canvasEl.getBoundingClientRect();
+    cssX = e.clientX - rect.left;
+    cssY = e.clientY - rect.top;
+  });
+  canvasEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+  rw.getInteractor().onMouseMove((callData: any) => {
+    const pos = callData.position;
+    picker.pick([pos.x, pos.y, 0], renderer);
+    const ptId = picker.getPointId();
+    if (ptId >= 0 && ptId < scalarsArr.getNumberOfTuples()) {
+      const val = scalarsArr.getValue(ptId);
+      if (isFinite(val)) {
+        tooltip.textContent = formatValue(val, label_format);
+        tooltip.style.display = 'block';
+        const rect = canvasEl.getBoundingClientRect();
+        tooltip.style.left = `${Math.min(cssX + 12, rect.width - 90)}px`;
+        tooltip.style.top  = `${Math.max(cssY - 28, 4)}px`;
+        return;
+      }
+    }
+    tooltip.style.display = 'none';
   });
 
   // ── Premier rendu — démarre au premier pas ────────────────────────────
