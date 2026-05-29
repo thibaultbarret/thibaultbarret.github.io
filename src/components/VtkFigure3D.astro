@@ -48,6 +48,15 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 
 <script>
 import '@kitware/vtk.js/Rendering/Profiles/Geometry';
+import vtkGenericRenderWindow           from '@kitware/vtk.js/Rendering/Misc/GenericRenderWindow';
+import vtkMapper                        from '@kitware/vtk.js/Rendering/Core/Mapper';
+import vtkActor                         from '@kitware/vtk.js/Rendering/Core/Actor';
+import vtkColorTransferFunction         from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
+import vtkPolyData                      from '@kitware/vtk.js/Common/DataModel/PolyData';
+import vtkDataArray                     from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkPoints                        from '@kitware/vtk.js/Common/Core/Points';
+import vtkCellArray                     from '@kitware/vtk.js/Common/Core/CellArray';
+import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style/InteractorStyleTrackballCamera';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -190,5 +199,239 @@ function fieldRange(sc: Float32Array): [number, number] {
     if (isFinite(sc[i])) { vmin = Math.min(vmin, sc[i]); vmax = Math.max(vmax, sc[i]); }
   }
   return [vmin, vmax];
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function initVtk3D(container: HTMLElement) {
+  const cfg = await fetch(container.dataset.src!).then(r => r.json());
+
+  const hasDic   = !!cfg.dic;
+  const hasFe    = !!cfg.fe;
+  const dualMode = hasDic && hasFe;
+
+  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e' } = cfg;
+  const steps: { step: number; text?: string }[] = cfg.steps ?? [];
+  const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
+
+  type FieldDef = { index: number; name: string };
+  const fieldsConfig: FieldDef[] = cfg.fields_config
+    ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
+
+  // ── Chargement ────────────────────────────────────────────────────────
+  type DicMesh = { coords: NpyArray; triangles: NpyArray; disp: NpyArray | null };
+  type FeMesh  = { coords: NpyArray; connectivity: NpyArray; disp: NpyArray | null };
+
+  const [dicMesh, feMesh, fieldsArr] = await Promise.all([
+    hasDic ? (async (): Promise<DicMesh> => ({
+      coords:    await fetchNpy(cfg.dic.coords),
+      triangles: await fetchNpy(cfg.dic.triangulation),
+      disp:      cfg.dic.displacements ? await fetchNpy(cfg.dic.displacements) : null,
+    }))() : Promise.resolve(null as DicMesh | null),
+    hasFe ? (async (): Promise<FeMesh> => ({
+      coords:       await fetchNpy(cfg.fe.coords),
+      connectivity: await fetchNpy(cfg.fe.connectivity),
+      disp:         cfg.fe.displacements ? await fetchNpy(cfg.fe.displacements) : null,
+    }))() : Promise.resolve(null as FeMesh | null),
+    (!dualMode && cfg.fields) ? fetchNpy(cfg.fields) : Promise.resolve(null as NpyArray | null),
+  ]);
+
+  // ── Renderer ─────────────────────────────────────────────────────────
+  const canvasEl = container.querySelector<HTMLElement>('.vtk3d-canvas')!;
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+  const rw = vtkGenericRenderWindow.newInstance();
+  rw.setContainer(canvasEl);
+  rw.resize();
+  const renderer = rw.getRenderer();
+  renderer.setBackground(0.118, 0.118, 0.173);
+  const renWin = rw.getRenderWindow();
+
+  // Caméra : convention DIC (Y vers le bas, regarde vers +Z)
+  const cam = renderer.getActiveCamera();
+  cam.setViewUp(0, -1, 0);
+  rw.getInteractor().setInteractorStyle(vtkInteractorStyleTrackballCamera.newInstance());
+
+  // ── PolyData + acteurs ────────────────────────────────────────────────
+  const hasSca = !dualMode && !!fieldsArr;
+  const lut    = vtkColorTransferFunction.newInstance();
+
+  function configureLut(vmin: number, vmax: number) {
+    lut.removeAllPoints();
+    const range = (vmax - vmin) || 1;
+    const eps   = range * 1e-7;
+    for (let i = 0; i < n_colors; i++) {
+      const t    = (i + 0.5) / n_colors;
+      const [, r, g, b] = interpolateCmap(cmapStops, t);
+      const v_lo = vmin + (i / n_colors) * range;
+      const v_hi = vmin + ((i + 1) / n_colors) * range;
+      lut.addRGBPoint(v_lo, r, g, b);
+      if (i < n_colors - 1) lut.addRGBPoint(v_hi - eps, r, g, b);
+    }
+    lut.setMappingRange(vmin, vmax);
+    lut.updateRange();
+  }
+
+  type MeshPd = { pd: any; pts: any; scalarsArr: any };
+
+  function buildPd(N: number, cells: Uint32Array): MeshPd {
+    const pd  = vtkPolyData.newInstance();
+    const pts = vtkPoints.newInstance();
+    pts.setData(new Float32Array(N * 3), 3);
+    pd.setPoints(pts);
+    const polys = vtkCellArray.newInstance();
+    polys.setData(cells);
+    pd.setPolys(polys);
+    const scalarsArr = hasSca
+      ? vtkDataArray.newInstance({ name: 'field', values: new Float32Array(N), numberOfComponents: 1 })
+      : null;
+    if (scalarsArr) pd.getPointData().setScalars(scalarsArr);
+    return { pd, pts, scalarsArr };
+  }
+
+  function addActor(pd: any, fixedColor?: [number, number, number]): any {
+    const mapper = vtkMapper.newInstance();
+    mapper.setInputData(pd);
+    mapper.setScalarVisibility(hasSca && !fixedColor);
+    if (hasSca && !fixedColor) mapper.setLookupTable(lut);
+    const actor = vtkActor.newInstance();
+    actor.setMapper(mapper);
+    actor.getProperty().setOpacity(opacity);
+    actor.getProperty().setLighting(false);
+    if (fixedColor) actor.getProperty().setColor(...fixedColor);
+    renderer.addActor(actor);
+    return mapper;
+  }
+
+  const dicPd  = dicMesh ? buildPd(dicMesh.coords.shape[0], makeTriangleCells(dicMesh.triangles)) : null;
+  const fePd   = feMesh  ? buildPd(feMesh.coords.shape[0],  makeQuadCells(feMesh.connectivity))   : null;
+  const dicMapper = dicPd ? addActor(dicPd.pd,  dualMode ? [0.455, 0.780, 0.925] : undefined) : null;
+  const feMapper  = fePd  ? addActor(fePd.pd,   dualMode ? [0.980, 0.702, 0.529] : undefined) : null;
+
+  // Mapper actif pour setScalarRange (mode maillage unique)
+  const activeMapper = dicMapper ?? feMapper!;
+  const activePd     = dicPd    ?? fePd!;
+
+  // ── Panneau texte ─────────────────────────────────────────────────────
+  const textPanel   = container.querySelector<HTMLElement>('.vtk3d-text-panel')!;
+  const textContent = container.querySelector<HTMLElement>('.vtk3d-text-content')!;
+  const hasText = steps.some(s => s.text);
+  if (hasText) textPanel.style.display = 'block';
+
+  // ── Légende double maillage ───────────────────────────────────────────
+  if (dualMode) {
+    const legend = container.querySelector<HTMLElement>('.vtk3d-legend')!;
+    legend.style.display = 'flex';
+    [['#74c7ec', 'DIC'], ['#fab387', 'EF']].forEach(([color, label]) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      const dot = document.createElement('span');
+      dot.style.cssText = `width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;`;
+      const txt = document.createElement('span');
+      txt.style.cssText = 'color:#cdd6f4;font:11px monospace;';
+      txt.textContent = label;
+      row.append(dot, txt);
+      legend.appendChild(row);
+    });
+  }
+
+  // ── Sélecteur de champs ───────────────────────────────────────────────
+  let currentFieldIdx = fieldsConfig[0].index;
+  const fieldsDiv = container.querySelector<HTMLElement>('.vtk3d-fields')!;
+  if (hasSca && fieldsConfig.length > 1) {
+    fieldsDiv.style.display = 'flex';
+    fieldsConfig.forEach(({ index, name }) => {
+      const btn = document.createElement('button');
+      btn.textContent = name;
+      btn.dataset.idx = String(index);
+      const active = index === fieldsConfig[0].index;
+      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
+      btn.addEventListener('click', async () => {
+        fieldsDiv.querySelectorAll('button').forEach(b => {
+          (b as HTMLElement).style.background = '#313244';
+          (b as HTMLElement).style.color = '#cdd6f4';
+        });
+        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
+        await render(currentSliderPos, index);
+      });
+      fieldsDiv.appendChild(btn);
+    });
+  }
+
+  // ── Rendu ─────────────────────────────────────────────────────────────
+  let currentSliderPos = 0;
+
+  async function render(stepPos: number, fieldIdx: number) {
+    const stepIdx = steps.length > 0 ? steps[stepPos].step : 0;
+
+    if (dicPd && dicMesh) {
+      dicPd.pts.setData(buildPositions3D(dicMesh.coords, dicMesh.disp, stepIdx), 3);
+      dicPd.pts.modified(); dicPd.pd.modified();
+    }
+    if (fePd && feMesh) {
+      fePd.pts.setData(buildPositions3D(feMesh.coords, feMesh.disp, stepIdx), 3);
+      fePd.pts.modified(); fePd.pd.modified();
+    }
+
+    if (hasSca && fieldsArr && activePd.scalarsArr) {
+      const newScalars = buildScalars(fieldsArr, stepIdx, fieldIdx);
+      const [vmin, vmax] = fieldRange(newScalars);
+      for (let i = 0; i < newScalars.length; i++) {
+        if (!isFinite(newScalars[i])) newScalars[i] = vmin;
+      }
+      activePd.scalarsArr.setData(newScalars);
+      activePd.scalarsArr.modified();
+      activePd.pd.modified();
+      configureLut(vmin, vmax);
+      activeMapper.setScalarRange(vmin, vmax);
+      const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+      drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format);
+      currentFieldIdx = fieldIdx;
+    }
+
+    if (hasText) textContent.innerHTML = steps[stepPos]?.text ?? '';
+    renWin.render();
+  }
+
+  // ── Slider ────────────────────────────────────────────────────────────
+  const controls = container.querySelector<HTMLElement>('.vtk3d-controls')!;
+  const slider   = container.querySelector<HTMLInputElement>('.vtk3d-slider')!;
+  const labelEl  = container.querySelector<HTMLElement>('.vtk3d-label')!;
+  const playBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-play')!;
+  const firstBtn = container.querySelector<HTMLButtonElement>('.vtk3d-first')!;
+  const prevBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-prev')!;
+  const nextBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-next')!;
+  const lastBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-last')!;
+  let animTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopAnim() {
+    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
+  }
+
+  async function goTo(pos: number) {
+    currentSliderPos = Math.max(0, Math.min(pos, steps.length - 1));
+    labelEl.textContent = `${currentSliderPos + 1}/${steps.length}`;
+    slider.value = String(currentSliderPos);
+    await render(currentSliderPos, currentFieldIdx);
+  }
+
+  if (steps.length > 1) {
+    controls.style.display = 'flex';
+    slider.max = String(steps.length - 1);
+    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
+    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
+    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos - 1); });
+    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos + 1); });
+    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
+    playBtn.addEventListener('click', () => {
+      if (animTimer) { stopAnim(); }
+      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentSliderPos + 1) % steps.length), 200); }
+    });
+  }
+
+  // ── Premier rendu ─────────────────────────────────────────────────────
+  await render(0, currentFieldIdx);
+  renderer.resetCamera();
+  renWin.render();
+  container.querySelector<HTMLElement>('.vtk3d-loading')!.style.display = 'none';
+  new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
 }
 </script>
