@@ -4,7 +4,7 @@ import Nav from '../../components/Nav.astro';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
+  const projects = (await getCollection('projects')).filter(p => p.data.show);
   return projects.map(project => ({
     params: { slug: project.slug },
     props: { project },
