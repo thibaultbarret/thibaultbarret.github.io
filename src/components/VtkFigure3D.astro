@@ -440,4 +440,34 @@ async function initVtk3D(container: HTMLElement) {
   container.querySelector<HTMLElement>('.vtk3d-loading')!.style.display = 'none';
   new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
 }
+
+function showError(container: HTMLElement, err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  const div = container.querySelector<HTMLElement>('.vtk3d-loading')!;
+  div.innerHTML = `<span style="color:#f38ba8;font:11px monospace;padding:16px;text-align:center;max-width:80%;">Erreur VTK : ${msg}</span>`;
+  div.style.flexDirection = 'column';
+  console.error('[VtkFigure3D]', err);
+}
+
+function setup() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(({ isIntersecting, target }) => {
+      if (!isIntersecting) return;
+      (target as HTMLElement).dataset.ready = '1';
+      obs.unobserve(target);
+      initVtk3D(target as HTMLElement).catch(e => showError(target as HTMLElement, e));
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll<HTMLElement>('.vtk3d-figure:not([data-ready])').forEach(el => obs.observe(el));
+  document.querySelectorAll('details').forEach(d => {
+    d.addEventListener('toggle', () => {
+      if (!d.open) return;
+      d.querySelectorAll<HTMLElement>('.vtk3d-figure:not([data-ready])').forEach(el => {
+        el.dataset.ready = '1'; obs.unobserve(el);
+        initVtk3D(el).catch(e => showError(el, e));
+      });
+    });
+  });
+}
+document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
 </script>
