@@ -1,0 +1,502 @@
+---
+// Lit un fichier JSON de configuration et reconstruit la visualisation
+// PyVista dans le navigateur via VTK.js + parsing .npy natif.
+//
+// JSON schema :
+// {
+//   "coords":        "/data/coordonnees_subsets.npy",   // (N, 2)
+//   "triangles":     "/data/subset_triangulation.npy",  // (T, 3)
+//   "fields":        "/data/deformations_cin.npy",      // (N, F) ou (N, F, S)
+//   "displacements": "/data/deplacements_cin_px.npy",   // (N, 2) ou (N, 2, S) — optionnel
+//
+//   // Champ unique :
+//   "field_index": 0,
+//   "field_name":  "PEEQ",
+//
+//   // Ou plusieurs champs (boutons de sélection) :
+//   "fields_config": [
+//     { "index": 0, "name": "PEEQ"   },
+//     { "index": 1, "name": "eps_xx" },
+//     { "index": 2, "name": "eps_yy" }
+//   ],
+//
+//   "cmap":     "RdYlGn_r",
+//   "n_colors": 10,
+//   "opacity":  0.8,
+//
+//   "steps": [
+//     { "step": 10, "image": "/data/img_step_10.png" }
+//     // plusieurs entrées → slider automatique
+//   ]
+// }
+
+interface Props { src: string; height?: number | string; }
+const { src, height = 450 } = Astro.props;
+const heightCss = typeof height === 'string' ? height : `${height}px`;
+---
+
+<div
+  class="vtk-figure"
+  data-src={src}
+  style={`height:${heightCss}; display:flex; overflow:hidden; background:#1e1e2e; border-radius:0.25rem;`}
+>
+  <!-- Zone de rendu VTK -->
+  <div class="vtk-canvas" style="flex:1; position:relative; overflow:hidden;">
+
+    <!-- Spinner -->
+    <div class="vtk-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;">
+      <span style="color:#a6adc8;font:12px monospace;">Chargement…</span>
+    </div>
+
+    <!-- Sélecteur de champ (plusieurs champs) -->
+    <div class="vtk-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
+
+    <!-- Colorbar : canvas et titre positionnés séparément pour alignement parfait -->
+    <canvas class="vtk-cb-canvas" width="16" height="200" style="position:absolute;right:44px;top:50%;transform:translateY(-100px);border-radius:3px;border:1px solid #45475a;pointer-events:none;z-index:10;display:block;"></canvas>
+    <span   class="vtk-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-118px);color:#cdd6f4;font:11px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
+    <div    class="vtk-cb-labels" style="position:absolute;right:64px;top:50%;transform:translateY(-100px);height:200px;pointer-events:none;z-index:10;"></div>
+
+    <!-- Bouton reset vue -->
+    <button class="vtk-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
+
+    <!-- Contrôles slider -->
+    <div class="vtk-controls" style="display:none;position:absolute;bottom:0;left:0;right:90px;padding:8px 12px;background:rgba(24,24,37,.85);z-index:10;align-items:center;gap:6px;">
+      <button class="vtk-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
+      <button class="vtk-prev"  title="Pas précédent" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏪</button>
+      <button class="vtk-play"  title="Lecture"       style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">▶</button>
+      <button class="vtk-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
+      <button class="vtk-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
+      <input  class="vtk-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
+      <span   class="vtk-label"  style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
+    </div>
+
+  </div><!-- /.vtk-canvas -->
+
+  <!-- Panneau texte (visible si au moins un pas a du texte) -->
+  <div class="vtk-text-panel" style="display:none;width:280px;overflow-y:auto;padding:20px 18px;background:rgba(24,24,37,.95);border-left:1px solid #45475a;flex-shrink:0;">
+    <div class="vtk-text-content" style="color:#cdd6f4;font:13px/1.75 sans-serif;"></div>
+  </div>
+
+</div>
+
+<script>
+import '@kitware/vtk.js/Rendering/Profiles/Geometry';
+import vtkGenericRenderWindow   from '@kitware/vtk.js/Rendering/Misc/GenericRenderWindow';
+import vtkMapper                from '@kitware/vtk.js/Rendering/Core/Mapper';
+import vtkActor                 from '@kitware/vtk.js/Rendering/Core/Actor';
+import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
+import vtkTexture               from '@kitware/vtk.js/Rendering/Core/Texture';
+import vtkPlaneSource           from '@kitware/vtk.js/Filters/Sources/PlaneSource';
+import vtkPolyData              from '@kitware/vtk.js/Common/DataModel/PolyData';
+import vtkImageData             from '@kitware/vtk.js/Common/DataModel/ImageData';
+import vtkDataArray             from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkPoints                from '@kitware/vtk.js/Common/Core/Points';
+import vtkCellArray             from '@kitware/vtk.js/Common/Core/CellArray';
+import vtkInteractorStyleManipulator    from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
+import vtkMouseCameraTrackballPanManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
+import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
+
+// ── Colormaps ─────────────────────────────────────────────────────────────
+const CMAPS: Record<string, [number,number,number,number][]> = {
+  viridis:  [[0,.267,.005,.329],[.25,.282,.341,.631],[.5,.129,.569,.553],[.75,.369,.788,.384],[1,.993,.906,.144]],
+  RdYlGn_r: [[0,.694,.004,.149],[.25,.992,.682,.380],[.5,1,1,.749],[.75,.549,.769,.290],[1,.165,.373,.165]],
+  coolwarm: [[0,.230,.299,.754],[.5,.865,.865,.865],[1,.706,.016,.150]],
+  jet:      [[0,0,0,.5],[.125,0,0,1],[.375,0,1,1],[.625,1,1,0],[.875,1,0,0],[1,.5,0,0]],
+};
+
+function interpolateCmap(stops: [number,number,number,number][], t: number): [number,number,number,number] {
+  for (let i = 1; i < stops.length; i++) {
+    if (t <= stops[i][0]) {
+      const f = (t - stops[i-1][0]) / (stops[i][0] - stops[i-1][0]);
+      return [t, ...([1,2,3] as const).map(k => stops[i-1][k] + (stops[i][k] - stops[i-1][k]) * f)] as any;
+    }
+  }
+  return stops.at(-1)!;
+}
+
+// ── Parser .npy ───────────────────────────────────────────────────────────
+interface NpyArray { data: ArrayLike<number>; shape: number[] }
+
+async function fetchNpy(url: string): Promise<NpyArray> {
+  const buf   = await fetch(url).then(r => r.arrayBuffer());
+  const bytes = new Uint8Array(buf);
+  const major = bytes[6];
+  const hlen  = major === 1 ? (bytes[8] | bytes[9] << 8) : (bytes[8] | bytes[9]<<8 | bytes[10]<<16 | bytes[11]<<24);
+  const hOff  = (major === 1 ? 10 : 12);
+  const header = new TextDecoder().decode(bytes.slice(hOff, hOff + hlen));
+  const dtype  = (header.match(/'descr'\s*:\s*'([^']+)'/) ?? ['','<f8'])[1];
+  const shape  = (header.match(/'shape'\s*:\s*\(([^)]*)\)/) ?? ['',''])[1]
+    .split(',').map(s => s.trim()).filter(Boolean).map(Number);
+  const raw = buf.slice(hOff + hlen);
+  let data: ArrayLike<number>;
+  if      (dtype.endsWith('f8')) data = new Float64Array(raw);
+  else if (dtype.endsWith('f4')) data = new Float32Array(raw);
+  else if (dtype.endsWith('i4') || dtype.endsWith('u4')) data = new Int32Array(raw);
+  else if (dtype.endsWith('i8') || dtype.endsWith('u8')) { const b = new BigInt64Array(raw); data = Int32Array.from(b, v => Number(v)); }
+  else if (dtype.endsWith('i2') || dtype.endsWith('u2')) data = new Int16Array(raw);
+  else data = new Float64Array(raw);
+  return { data, shape };
+}
+
+function idx(arr: ArrayLike<number>, shape: number[], ...ix: number[]) {
+  let o = 0, s = 1;
+  for (let i = shape.length - 1; i >= 0; i--) { o += (ix[i] ?? 0) * s; s *= shape[i]; }
+  return arr[o] as number;
+}
+
+// ── Construction du PolyData ──────────────────────────────────────────────
+interface RawData { coords: NpyArray; triangles: NpyArray; fields: NpyArray; disp: NpyArray | null }
+
+function buildPositions(raw: RawData, stepIdx: number, H: number): Float32Array {
+  const { coords, disp } = raw;
+  const N = coords.shape[0];
+  const pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    let x = idx(coords.data, coords.shape, i, 0);
+    let y = idx(coords.data, coords.shape, i, 1);
+    if (disp) {
+      x += disp.shape.length === 3 ? idx(disp.data, disp.shape, i, 0, stepIdx) : idx(disp.data, disp.shape, i, 0);
+      y += disp.shape.length === 3 ? idx(disp.data, disp.shape, i, 1, stepIdx) : idx(disp.data, disp.shape, i, 1);
+    }
+    pos[i*3] = x; pos[i*3+1] = H - y; pos[i*3+2] = 0;
+  }
+  return pos;
+}
+
+function buildScalars(raw: RawData, stepIdx: number, fieldIdx: number): Float32Array {
+  const { fields } = raw;
+  const N = fields.shape[0];
+  const out = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    out[i] = fields.shape.length === 3 ? idx(fields.data, fields.shape, i, fieldIdx, stepIdx)
+           : fields.shape.length === 2 ? idx(fields.data, fields.shape, i, fieldIdx)
+           : (fields.data[i] as number);
+    // NaN numpy → NaN Float32 (préservé tel quel, filtré au niveau des triangles)
+  }
+  return out;
+}
+
+// Calcule le range en ignorant les NaN/Inf
+function fieldRange(sc: Float32Array): [number, number] {
+  let vmin = Infinity, vmax = -Infinity;
+  for (let i = 0; i < sc.length; i++) {
+    if (isFinite(sc[i])) { vmin = Math.min(vmin, sc[i]); vmax = Math.max(vmax, sc[i]); }
+  }
+  return [vmin, vmax];
+}
+
+function makeCells(raw: RawData): Uint32Array {
+  const { triangles } = raw;
+  const T = triangles.shape[0];
+  const buf = new Uint32Array(T * 4);
+  for (let t = 0; t < T; t++) {
+    buf[t*4]   = 3;
+    buf[t*4+1] = idx(triangles.data, triangles.shape, t, 0);
+    buf[t*4+2] = idx(triangles.data, triangles.shape, t, 1);
+    buf[t*4+3] = idx(triangles.data, triangles.shape, t, 2);
+  }
+  return buf;
+}
+
+// ── Texture depuis URL ────────────────────────────────────────────────────
+async function toTexture(src: string) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise<void>((ok, ko) => { img.onload = () => ok(); img.onerror = () => ko(new Error(`Image introuvable : ${src}`)); img.src = src; });
+  const c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  c.getContext('2d')!.drawImage(img, 0, 0);
+  const px = c.getContext('2d')!.getImageData(0, 0, img.width, img.height);
+  const sc = vtkDataArray.newInstance({ name:'px', values: new Uint8Array(px.data), numberOfComponents:4 });
+  const vi = vtkImageData.newInstance();
+  vi.setDimensions(img.width, img.height, 1); vi.setSpacing(1,1,1); vi.getPointData().setScalars(sc);
+  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(true);
+  return { tex, w: img.width, h: img.height };
+}
+
+// ── Formatage des labels ──────────────────────────────────────────────────
+// Formats supportés : ".Ne" | ".Nf" | ".Ng"  (N = nb de chiffres)
+function formatValue(v: number, fmt: string): string {
+  const m = fmt.match(/^\.(\d+)([efg])$/);
+  if (!m) return String(v);
+  const n = parseInt(m[1]);
+  if (m[2] === 'e') return v.toExponential(n);
+  if (m[2] === 'f') return v.toFixed(n);
+  return v.toPrecision(n);
+}
+
+// ── Colorbar ──────────────────────────────────────────────────────────────
+function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string) {
+  const title  = container.querySelector<HTMLElement>('.vtk-cb-title')!;
+  const canvas = container.querySelector<HTMLCanvasElement>('.vtk-cb-canvas')!;
+  const labels = container.querySelector<HTMLElement>('.vtk-cb-labels')!;
+  labels.innerHTML = '';
+  title.textContent = name;
+  const ctx = canvas.getContext('2d')!;
+  const bandH = 200 / nColors;
+  for (let i = 0; i < nColors; i++) {
+    // i=0 en haut → valeur max ; i=nColors-1 en bas → valeur min
+    const t = (nColors - 1 - i + 0.5) / nColors;
+    const [, r, gg, b] = interpolateCmap(stops, t);
+    ctx.fillStyle = `rgb(${(r*255)|0},${(gg*255)|0},${(b*255)|0})`;
+    ctx.fillRect(0, Math.floor(i * bandH), 16, Math.ceil(bandH) + 1);
+  }
+  for (let i = 0; i <= nColors; i++) {
+    const v = vmin + (vmax - vmin) * (1 - i / nColors);
+    const s = document.createElement('span');
+    s.style.cssText = `position:absolute;top:${i * 200 / nColors}px;right:0;transform:translateY(-50%);color:#a6adc8;font:10px monospace;text-align:right;white-space:nowrap;`;
+    s.textContent = formatValue(v, labelFmt);
+    labels.appendChild(s);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function initVtk(container: HTMLElement) {
+  const cfg = await fetch(container.dataset.src!).then(r => r.json());
+
+  // Normaliser la config des champs
+  type FieldDef = { index: number; name: string };
+  const fieldsConfig: FieldDef[] = cfg.fields_config
+    ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
+
+  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e' } = cfg;
+  const steps: { step: number; image: string; text?: string }[] = cfg.steps ?? [];
+  const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
+
+  // Charger les .npy
+  const [coordsArr, triArr, fieldsArr, dispArr] = await Promise.all([
+    fetchNpy(cfg.coords), fetchNpy(cfg.triangles), fetchNpy(cfg.fields),
+    cfg.displacements ? fetchNpy(cfg.displacements) : Promise.resolve(null),
+  ]);
+  const raw: RawData = { coords: coordsArr, triangles: triArr, fields: fieldsArr, disp: dispArr };
+
+  // ── Panneau texte ─────────────────────────────────────────────────────────
+  const textPanel   = container.querySelector<HTMLElement>('.vtk-text-panel')!;
+  const textContent = container.querySelector<HTMLElement>('.vtk-text-content')!;
+  const hasText = steps.some(s => s.text);
+  if (hasText) textPanel.style.display = 'block';
+
+  // ── Renderer ─────────────────────────────────────────────────────────────
+  const canvasEl = container.querySelector<HTMLElement>('.vtk-canvas')!;
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+  const rw = vtkGenericRenderWindow.newInstance();
+  rw.setContainer(canvasEl);
+  rw.resize();
+  const renderer = rw.getRenderer();
+  renderer.setBackground(0.118, 0.118, 0.173);
+  const renWin = rw.getRenderWindow();
+
+  // Interaction 2D : pan + zoom seulement, pas de rotation
+  const iStyle = vtkInteractorStyleManipulator.newInstance();
+  iStyle.addMouseManipulator(vtkMouseCameraTrackballPanManipulator.newInstance({ button: 1 }));
+  iStyle.addMouseManipulator(vtkMouseCameraTrackballZoomManipulator.newInstance({ button: 3 }));
+  iStyle.addMouseManipulator(vtkMouseCameraTrackballZoomManipulator.newInstance({ scrollEnabled: true, dragEnabled: false }));
+  rw.getInteractor().setInteractorStyle(iStyle);
+
+  // LUT (reconfigurée à chaque pas avec fonction en escalier)
+  const lut = vtkColorTransferFunction.newInstance();
+
+  function configureLut(vmin: number, vmax: number) {
+    lut.removeAllPoints();
+    const range = (vmax - vmin) || 1;
+    const eps = range * 1e-7;
+    for (let i = 0; i < n_colors; i++) {
+      const t = (i + 0.5) / n_colors;
+      const [, r, g, b] = interpolateCmap(cmapStops, t);
+      const v_lo = vmin + (i / n_colors) * range;
+      const v_hi = vmin + ((i + 1) / n_colors) * range;
+      lut.addRGBPoint(v_lo, r, g, b);
+      if (i < n_colors - 1) lut.addRGBPoint(v_hi - eps, r, g, b);
+    }
+    lut.setMappingRange(vmin, vmax);
+    lut.updateRange();
+  }
+
+  // PolyData initial (rempli lors du premier render)
+  const pd = vtkPolyData.newInstance();
+  const pts = vtkPoints.newInstance();
+  pts.setData(new Float32Array(raw.coords.shape[0] * 3), 3);
+  pd.setPoints(pts);
+  const polys = vtkCellArray.newInstance();
+  polys.setData(makeCells(raw));  // topologie fixe, construite une seule fois
+  pd.setPolys(polys);
+  const scalarsArr = vtkDataArray.newInstance({ name:'field', values: new Float32Array(raw.coords.shape[0]), numberOfComponents:1 });
+  pd.getPointData().setScalars(scalarsArr);
+
+  const meshMapper = vtkMapper.newInstance();
+  meshMapper.setInputData(pd);
+  meshMapper.setLookupTable(lut);
+  meshMapper.setScalarVisibility(true);
+  const meshActor = vtkActor.newInstance();
+  meshActor.setMapper(meshMapper);
+  meshActor.getProperty().setOpacity(opacity);
+  meshActor.getProperty().setLighting(false);
+  renderer.addActor(meshActor);
+
+  let bgActor: any = null;
+  let imgH = 1;
+  const texCache = new Map<string, Awaited<ReturnType<typeof toTexture>>>();
+
+  const cam = renderer.getActiveCamera();
+  cam.setParallelProjection(true);
+
+  // ── Rendu (mis à jour par step ET par champ) ──────────────────────────
+  let currentStep = -1;
+  let currentFieldIdx = fieldsConfig[0].index;
+
+  async function render(stepPos: number, fieldIdx: number) {
+    const { step, image } = steps[stepPos];
+
+    // Image de fond
+    if (!texCache.has(image)) texCache.set(image, await toTexture(image));
+    const { tex, w, h } = texCache.get(image)!;
+    if (!bgActor) {
+      imgH = h;
+      const plane = vtkPlaneSource.newInstance();
+      plane.setOrigin(0,h,-1); plane.setPoint1(w,h,-1); plane.setPoint2(0,0,-1); plane.update();
+      const pm = vtkMapper.newInstance(); pm.setInputConnection(plane.getOutputPort());
+      bgActor = vtkActor.newInstance(); bgActor.setMapper(pm);
+      renderer.addActor(bgActor);
+      cam.setPosition(w/2,h/2,10); cam.setFocalPoint(w/2,h/2,0);
+      cam.setViewUp(0,1,0); cam.setParallelScale(h/2);
+    }
+    bgActor.getTextures().forEach((t: any) => bgActor.removeTexture(t));
+    bgActor.addTexture(tex);
+
+    // Positions (mises à jour si le pas change)
+    if (step !== currentStep) {
+      pts.setData(buildPositions(raw, step, imgH), 3);
+      pts.modified(); pd.modified();
+      currentStep = step;
+    }
+
+    // Scalaires + range par pas
+    const newScalars = buildScalars(raw, step, fieldIdx);
+    const [vmin, vmax] = fieldRange(newScalars);
+    for (let i = 0; i < newScalars.length; i++) {
+      if (!isFinite(newScalars[i])) newScalars[i] = vmin;
+    }
+    scalarsArr.setData(newScalars);
+    scalarsArr.modified();
+    pd.modified();
+
+    // LUT et colorbar mis à jour à chaque pas
+    configureLut(vmin, vmax);
+    meshMapper.setScalarRange(vmin, vmax);
+    const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+    drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format);
+    currentFieldIdx = fieldIdx;
+
+    // Texte associé au pas
+    if (hasText) textContent.innerHTML = steps[stepPos].text ?? '';
+
+    renWin.render();
+
+    // Précharger l'image suivante
+    const next = (stepPos + 1) % steps.length;
+    if (!texCache.has(steps[next].image)) toTexture(steps[next].image).then(t => texCache.set(steps[next].image, t));
+  }
+
+  // ── Sélecteur de champs ───────────────────────────────────────────────
+  const fieldsDiv = container.querySelector<HTMLElement>('.vtk-fields')!;
+  if (fieldsConfig.length > 1) {
+    fieldsDiv.style.display = 'flex';
+    fieldsConfig.forEach(({ index, name }) => {
+      const btn = document.createElement('button');
+      btn.textContent = name;
+      btn.dataset.idx = String(index);
+      const active = index === fieldsConfig[0].index;
+      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
+      btn.addEventListener('click', async () => {
+        fieldsDiv.querySelectorAll('button').forEach(b => {
+          b.style.background = '#313244'; b.style.color = '#cdd6f4';
+        });
+        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
+        await render(currentSliderPos, index);
+      });
+      fieldsDiv.appendChild(btn);
+    });
+  }
+
+  // ── Slider de pas ────────────────────────────────────────────────────
+  const controls  = container.querySelector<HTMLElement>('.vtk-controls')!;
+  const slider    = container.querySelector<HTMLInputElement>('.vtk-slider')!;
+  const label     = container.querySelector<HTMLElement>('.vtk-label')!;
+  const playBtn   = container.querySelector<HTMLButtonElement>('.vtk-play')!;
+  const firstBtn  = container.querySelector<HTMLButtonElement>('.vtk-first')!;
+  const prevBtn   = container.querySelector<HTMLButtonElement>('.vtk-prev')!;
+  const nextBtn   = container.querySelector<HTMLButtonElement>('.vtk-next')!;
+  const lastBtn   = container.querySelector<HTMLButtonElement>('.vtk-last')!;
+  let currentSliderPos = 0;
+  let animTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopAnim() {
+    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
+  }
+
+  async function goTo(pos: number) {
+    currentSliderPos = Math.max(0, Math.min(pos, steps.length - 1));
+    label.textContent = `${currentSliderPos + 1}/${steps.length}`;
+    slider.value = String(currentSliderPos);
+    await render(currentSliderPos, currentFieldIdx);
+  }
+
+  if (steps.length > 1) {
+    controls.style.display = 'flex';
+    slider.max = String(steps.length - 1);
+    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
+    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
+    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos - 1); });
+    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos + 1); });
+    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
+    playBtn.addEventListener('click', () => {
+      if (animTimer) { stopAnim(); }
+      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentSliderPos + 1) % steps.length), 200); }
+    });
+  }
+
+  // ── Bouton reset vue ──────────────────────────────────────────────────
+  const resetBtn = container.querySelector<HTMLButtonElement>('.vtk-reset')!;
+  resetBtn.style.display = 'block';
+  resetBtn.addEventListener('click', () => {
+    renderer.resetCamera();
+    renWin.render();
+  });
+
+  // ── Premier rendu — démarre au premier pas ────────────────────────────
+  await goTo(0);
+  container.querySelector<HTMLElement>('.vtk-loading')!.style.display = 'none';
+  new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
+}
+
+function showError(container: HTMLElement, err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  const div = container.querySelector<HTMLElement>('.vtk-loading')!;
+  div.innerHTML = `<span style="color:#f38ba8;font:11px monospace;padding:16px;text-align:center;max-width:80%;">Erreur VTK : ${msg}</span>`;
+  div.style.flexDirection = 'column';
+  console.error('[VtkFigure]', err);
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+function setup() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(({ isIntersecting, target }) => {
+      if (!isIntersecting) return;
+      (target as HTMLElement).dataset.ready = '1';
+      obs.unobserve(target);
+      initVtk(target as HTMLElement).catch(e => showError(target as HTMLElement, e));
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll<HTMLElement>('.vtk-figure:not([data-ready])').forEach(el => obs.observe(el));
+  document.querySelectorAll('details').forEach(d => {
+    d.addEventListener('toggle', () => {
+      if (!d.open) return;
+      d.querySelectorAll<HTMLElement>('.vtk-figure:not([data-ready])').forEach(el => {
+        el.dataset.ready = '1'; obs.unobserve(el);
+        initVtk(el).catch(e => showError(el, e));
+      });
+    });
+  });
+}
+document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
+</script>
