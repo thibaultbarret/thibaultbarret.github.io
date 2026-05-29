@@ -31,9 +31,14 @@ const chapters = defineCollection({
   schema: z.object({
     title:  z.string(),
     order:  z.number(),
+    description: z.string().optional(),
     figures: z.array(z.object({
       filename: z.string(),
       title:    z.string(),
+      image:    z.string().optional(),          // image de fond (pour figures VTK)
+      field:    z.string().optional(),          // champ scalaire à afficher
+      cmap:     z.string().default('RdYlGn_r'),
+      opacity:  z.number().default(0.8),
     })).default([]),
   }),
 });
