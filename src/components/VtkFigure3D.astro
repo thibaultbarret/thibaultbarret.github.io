@@ -21,6 +21,12 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Légende double maillage -->
     <div class="vtk3d-legend" style="display:none;position:absolute;top:10px;left:10px;flex-direction:column;gap:6px;z-index:10;padding:8px 10px;background:rgba(24,24,37,.85);border-radius:4px;border:1px solid #45475a;"></div>
 
+    <!-- Bouton reset vue -->
+    <button class="vtk3d-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
+
+    <!-- Tooltip valeur scalaire -->
+    <div class="vtk3d-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
+
     <!-- Colorbar -->
     <canvas class="vtk3d-cb-canvas" width="16" height="200" style="position:absolute;right:44px;top:50%;transform:translateY(-100px);border-radius:3px;border:1px solid #45475a;pointer-events:none;z-index:10;display:block;"></canvas>
     <span   class="vtk3d-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-118px);color:#cdd6f4;font:11px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
@@ -57,6 +63,7 @@ import vtkDataArray                     from '@kitware/vtk.js/Common/Core/DataAr
 import vtkPoints                        from '@kitware/vtk.js/Common/Core/Points';
 import vtkCellArray                     from '@kitware/vtk.js/Common/Core/CellArray';
 import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style/InteractorStyleTrackballCamera';
+import vtkCellPicker                    from '@kitware/vtk.js/Rendering/Core/CellPicker';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -439,6 +446,51 @@ async function initVtk3D(container: HTMLElement) {
   renWin.render();
   container.querySelector<HTMLElement>('.vtk3d-loading')!.style.display = 'none';
   new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
+
+  // ── Bouton reset vue ──────────────────────────────────────────────────
+  const resetBtn = container.querySelector<HTMLButtonElement>('.vtk3d-reset')!;
+  resetBtn.style.display = 'block';
+  // Sauvegarde l'état caméra après le premier resetCamera()
+  const initCamPos    = cam.getPosition().slice() as [number,number,number];
+  const initCamFocal  = cam.getFocalPoint().slice() as [number,number,number];
+  const initCamUp     = cam.getViewUp().slice() as [number,number,number];
+  const initParScale  = cam.getParallelScale();
+  resetBtn.addEventListener('click', () => {
+    cam.setPosition(...initCamPos);
+    cam.setFocalPoint(...initCamFocal);
+    cam.setViewUp(...initCamUp);
+    cam.setParallelScale(initParScale);
+    renWin.render();
+  });
+
+  // ── Tooltip valeur scalaire ───────────────────────────────────────────
+  if (hasSca && activePd.scalarsArr) {
+    const tooltip = container.querySelector<HTMLElement>('.vtk3d-tooltip')!;
+    const picker  = vtkCellPicker.newInstance();
+    picker.setTolerance(0.005);
+
+    canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
+      const rect = canvasEl.getBoundingClientRect();
+      // VTK.js attend des coordonnées canvas avec Y inversé
+      const x = e.clientX - rect.left;
+      const y = rect.height - (e.clientY - rect.top);
+      picker.pick([x, y, 0], renderer);
+      const ptId = picker.getPointId();
+      if (ptId >= 0 && ptId < activePd.scalarsArr.getNumberOfTuples()) {
+        const val = activePd.scalarsArr.getValue(ptId);
+        tooltip.textContent = formatValue(val, label_format);
+        tooltip.style.display = 'block';
+        // Positionne le tooltip près du curseur, en restant dans le canvas
+        const tx = Math.min(e.clientX - rect.left + 12, rect.width - 80);
+        const ty = Math.max(e.clientY - rect.top - 28, 4);
+        tooltip.style.left = `${tx}px`;
+        tooltip.style.top  = `${ty}px`;
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+    canvasEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+  }
 }
 
 function showError(container: HTMLElement, err: unknown) {
