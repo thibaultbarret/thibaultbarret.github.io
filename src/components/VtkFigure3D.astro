@@ -21,8 +21,11 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Légende double maillage -->
     <div class="vtk3d-legend" style="display:none;position:absolute;top:10px;left:10px;flex-direction:column;gap:6px;z-index:10;padding:8px 10px;background:rgba(24,24,37,.85);border-radius:4px;border:1px solid #45475a;"></div>
 
-    <!-- Bouton reset vue -->
-    <button class="vtk3d-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
+    <!-- Boutons de vue (bas droite) -->
+    <div class="vtk3d-view-btns" style="display:none;position:absolute;bottom:10px;right:10px;z-index:10;display:flex;gap:4px;">
+      <button class="vtk3d-parallel" title="Vue parallèle (face)" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:28px;height:28px;cursor:pointer;padding:0;">⊡</button>
+      <button class="vtk3d-reset"    title="Réinitialiser la vue"  style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;">⟳</button>
+    </div>
 
     <!-- Tooltip valeur scalaire -->
     <div class="vtk3d-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
@@ -450,11 +453,20 @@ async function initVtk3D(container: HTMLElement) {
   container.querySelector<HTMLElement>('.vtk3d-loading')!.style.display = 'none';
   new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
 
-  // ── Bouton reset vue ──────────────────────────────────────────────────
-  const resetBtn = container.querySelector<HTMLButtonElement>('.vtk3d-reset')!;
-  resetBtn.style.display = 'block';
-  resetBtn.addEventListener('click', () => {
+  // ── Boutons de vue ────────────────────────────────────────────────────
+  container.querySelector<HTMLElement>('.vtk3d-view-btns')!.style.display = 'flex';
+
+  container.querySelector<HTMLButtonElement>('.vtk3d-reset')!.addEventListener('click', () => {
     cam.setViewUp(0, -1, 0);
+    renderer.resetCamera();
+    renWin.render();
+  });
+
+  container.querySelector<HTMLButtonElement>('.vtk3d-parallel')!.addEventListener('click', () => {
+    cam.setParallelProjection(true);
+    cam.setViewUp(0, -1, 0);
+    cam.setPosition(0, 0, -1);
+    cam.setFocalPoint(0, 0, 0);
     renderer.resetCamera();
     renWin.render();
   });
