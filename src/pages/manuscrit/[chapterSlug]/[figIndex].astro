@@ -137,7 +137,7 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
   </body>
 </html>
 
-<style>
+<style is:global>
   .prose-manuscrit {
     color: var(--text);
     font-size: 0.95rem;
@@ -145,11 +145,10 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
     max-width: 72ch;
   }
   .prose-manuscrit p        { margin-bottom: 1em; }
-  .prose-manuscrit h1,
-  .prose-manuscrit h2,
-  .prose-manuscrit h3       { font-family: serif; font-weight: 600; margin: 1.5em 0 0.5em; color: var(--text); }
-  .prose-manuscrit h2       { font-size: 1.15rem; }
-  .prose-manuscrit h3       { font-size: 1rem; }
+  .prose-manuscrit h1       { font-family: serif; font-weight: 700; font-size: 1.35rem; margin: 1.75em 0 0.5em; color: var(--text); }
+  .prose-manuscrit h2       { font-family: serif; font-weight: 600; font-size: 1.15rem; margin: 1.5em 0 0.5em;  color: var(--text); }
+  .prose-manuscrit h3       { font-family: serif; font-weight: 600; font-size: 1rem;    margin: 1.25em 0 0.4em; color: var(--text); }
+  .prose-manuscrit h4       { font-family: serif; font-weight: 600; font-size: 0.9rem;  margin: 1em 0 0.3em;    color: var(--text-muted); font-style: italic; }
   .prose-manuscrit ul,
   .prose-manuscrit ol       { padding-left: 1.5em; margin-bottom: 1em; }
   .prose-manuscrit li       { margin-bottom: 0.25em; }

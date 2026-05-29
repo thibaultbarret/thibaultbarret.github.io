@@ -1,0 +1,158 @@
+---
+import { getCollection } from 'astro:content';
+import Nav from '../../components/Nav.astro';
+import '../../styles/global.css';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkMath from 'remark-math';
+import remarkRehype from 'remark-rehype';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
+
+type Segment =
+  | { type: 'text';   html: string }
+  | { type: 'figure'; index: number };
+
+// Divise le corps markdown sur les marqueurs <!-- figure: N -->
+// et rend chaque segment texte en HTML.
+async function parseBody(body: string): Promise<Segment[]> {
+  if (!body?.trim()) return [];
+
+  const MARKER = /<!--\s*figure:\s*(\d+)\s*-->/g;
+  const parts: { kind: 'text' | 'figure'; content: string; index?: number }[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = MARKER.exec(body)) !== null) {
+    if (m.index > last) parts.push({ kind: 'text', content: body.slice(last, m.index) });
+    parts.push({ kind: 'figure', content: '', index: parseInt(m[1]) });
+    last = MARKER.lastIndex;
+  }
+  if (last < body.length) parts.push({ kind: 'text', content: body.slice(last) });
+
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkMath)
+    .use(remarkRehype)
+    .use(rehypeKatex)
+    .use(rehypeStringify);
+
+  const segments: Segment[] = [];
+  for (const p of parts) {
+    if (p.kind === 'figure') {
+      segments.push({ type: 'figure', index: p.index! });
+    } else {
+      const html = String(await processor.process(p.content));
+      if (html.trim()) segments.push({ type: 'text', html });
+    }
+  }
+  return segments;
+}
+
+const chapters = (await getCollection('chapters'))
+  .sort((a, b) => a.data.order - b.data.order);
+
+const chapterSegments = await Promise.all(
+  chapters.map(ch => parseBody(ch.body ?? ''))
+);
+---
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Manuscrit de thèse — Thibault Barret" />
+    <title>Manuscrit — Thibault Barret</title>
+  </head>
+  <body>
+    <Nav />
+    <main class="pt-16">
+      <div class="max-w-4xl mx-auto px-6 py-12">
+        <h1 class="font-serif text-3xl font-bold mb-2" style="color: var(--text);">Manuscrit</h1>
+        <div class="w-12 h-0.5 mb-12" style="background: var(--accent);"></div>
+
+        <div class="space-y-14">
+          {chapters.map((chapter, idx) => {
+            const segments = chapterSegments[idx];
+            const slug = chapter.id.replace(/\.md$/, '');
+            // Figures non référencées par un marqueur → affichées à la fin
+            const referencedFigs = new Set(
+              segments.filter(s => s.type === 'figure').map(s => (s as any).index)
+            );
+            const unrefFigs = chapter.data.figures
+              .map((fig, i) => ({ fig, i }))
+              .filter(({ i }) => !referencedFigs.has(i));
+
+            return (
+              <section>
+                <h2 class="font-serif text-xl font-semibold mb-5" style="color: var(--text);">
+                  Chapitre {chapter.data.order} — {chapter.data.title}
+                </h2>
+
+                {segments.map(seg => {
+                  if (seg.type === 'text') {
+                    return <div class="prose-manuscrit mb-4" set:html={seg.html} />;
+                  }
+                  const fig = chapter.data.figures[seg.index];
+                  if (!fig) return null;
+                  return (
+                    <div class="my-4">
+                      <a
+                        href={`/manuscrit/${slug}/${seg.index}`}
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
+                        style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
+                      >
+                        <span style="color: var(--accent); font:12px monospace;">▶</span>
+                        <span class="text-sm">{fig.title}</span>
+                      </a>
+                    </div>
+                  );
+                })}
+
+                {unrefFigs.length > 0 && (
+                  <ul class="space-y-2 mt-4">
+                    {unrefFigs.map(({ fig, i }) => (
+                      <li>
+                        <a
+                          href={`/manuscrit/${slug}/${i}`}
+                          class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
+                          style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
+                        >
+                          <span style="color: var(--accent); font:12px monospace;">▶</span>
+                          <span class="text-sm">{fig.title}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      </div>
+    </main>
+    <footer class="py-6 text-center text-xs" style="color: var(--text-muted); border-top: 1px solid var(--border);">
+      © {new Date().getFullYear()} Thibault Barret
+    </footer>
+  </body>
+</html>
+
+<style>
+  .prose-manuscrit {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+  .prose-manuscrit :global(p)      { margin-bottom: 1em; }
+  .prose-manuscrit :global(h1)     { font-family: serif; font-weight: 700; font-size: 1.35rem; margin: 1.75em 0 0.5em;  color: var(--text); }
+  .prose-manuscrit :global(h2)     { font-family: serif; font-weight: 600; font-size: 1.15rem; margin: 1.5em 0 0.5em;   color: var(--text); }
+  .prose-manuscrit :global(h3)     { font-family: serif; font-weight: 600; font-size: 1rem;    margin: 1.25em 0 0.4em;  color: var(--text); }
+  .prose-manuscrit :global(h4)     { font-family: serif; font-weight: 600; font-size: 0.9rem;  margin: 1em 0 0.3em;     color: var(--text-muted); font-style: italic; }
+  .prose-manuscrit :global(ul),
+  .prose-manuscrit :global(ol)     { padding-left: 1.5em; margin-bottom: 1em; }
+  .prose-manuscrit :global(li)     { margin-bottom: 0.25em; }
+  .prose-manuscrit :global(code)   { font-size: 0.85em; background: var(--bg-surface); padding: 0.1em 0.4em; border-radius: 3px; }
+  .prose-manuscrit :global(strong) { font-weight: 600; }
+  .prose-manuscrit :global(em)     { font-style: italic; color: var(--text-muted); }
+  .prose-manuscrit :global(a)      { color: var(--accent); text-decoration: underline; }
+</style>
