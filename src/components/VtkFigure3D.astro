@@ -453,16 +453,9 @@ async function initVtk3D(container: HTMLElement) {
   // ── Bouton reset vue ──────────────────────────────────────────────────
   const resetBtn = container.querySelector<HTMLButtonElement>('.vtk3d-reset')!;
   resetBtn.style.display = 'block';
-  // Sauvegarde l'état caméra après le premier resetCamera()
-  const initCamPos    = cam.getPosition().slice() as [number,number,number];
-  const initCamFocal  = cam.getFocalPoint().slice() as [number,number,number];
-  const initCamUp     = cam.getViewUp().slice() as [number,number,number];
-  const initParScale  = cam.getParallelScale();
   resetBtn.addEventListener('click', () => {
-    cam.setPosition(...initCamPos);
-    cam.setFocalPoint(...initCamFocal);
-    cam.setViewUp(...initCamUp);
-    cam.setParallelScale(initParScale);
+    cam.setViewUp(0, -1, 0);
+    renderer.resetCamera();
     renWin.render();
   });
 
