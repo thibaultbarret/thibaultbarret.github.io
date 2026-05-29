@@ -84,7 +84,7 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
             <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
           </>
         )}
-        {!isVtk && !isJs && (
+        {!isVtk && !isVtk3D && !isJs && (
           <iframe
             src={`/figures/manuscrit/${fig.filename}`}
             width="100%"
