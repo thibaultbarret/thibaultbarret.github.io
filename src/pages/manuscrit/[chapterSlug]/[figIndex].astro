@@ -20,9 +20,6 @@ export async function getStaticPaths() {
 const { chapter, fig, figIndex, totalFigs } = Astro.props;
 const { chapterSlug } = Astro.params;
 
-const { Content } = await chapter.render();
-const hasContent = chapter.body?.trim().length > 0;
-
 const ext = fig.filename.split('.').pop();
 const isJs  = ext === 'js';
 const figId = `fig-${figIndex}`;
@@ -94,18 +91,6 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
             class="block rounded"
             style="border: 1px solid var(--border);"
           />
-        )}
-
-        <!-- Contexte du chapitre -->
-        {hasContent && (
-          <div class="mt-10 pt-8" style="border-top: 1px solid var(--border);">
-            <h2 class="font-serif text-lg font-semibold mb-4" style="color: var(--text-muted);">
-              Chapitre {chapter.data.order} — {chapter.data.title}
-            </h2>
-            <div class="prose-manuscrit">
-              <Content />
-            </div>
-          </div>
         )}
 
         <!-- Navigation précédent / suivant -->
