@@ -1,5 +1,6 @@
 ---
 title: "Module python ONII"
+slug: "onii"
 description: "Module python pour l'identification inverse des paramètres matériaux de loi de comportement à partir d'essais mécaniques."
 status: "en cours"
 tags: ["python", "identification inverse", "FEMU", "identifiabilité"]

@@ -1,5 +1,6 @@
 ---
 title: "LSP PGFplots et TikZ"
+slug: "lsp-pgfplots-tikz"
 description: " Ce projet a pour but de proposer un LSP qui permet d'améliorer l'expérience de développement pour les utilisateurs de pgfplots et TikZ dans Neovim.
 Le LSP fournira des fonctionnalités telles que la complétion automatique, la vérification de syntaxe, et des suggestions de code pour faciliter la création de graphiques et de dessins vectoriels en LaTeX.
 "

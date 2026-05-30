@@ -1,5 +1,6 @@
 ---
 title: "Implémentation de loi de comportement thermomécanique avec le générateur de code MFront"
+slug: "loi-comportement-mfront"
 description: ""
 figure: ""
 tags: ["Loi de comportement thermomécanique", "MFront", "MTest", "Abaqus"]

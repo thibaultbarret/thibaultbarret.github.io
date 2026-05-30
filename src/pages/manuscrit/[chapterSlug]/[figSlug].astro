@@ -11,7 +11,7 @@ export async function getStaticPaths() {
   const chapters = (await getCollection('chapters')).filter(c => c.data.show);
   return chapters.flatMap(chapter =>
     chapter.data.figures.map((fig, i) => ({
-      params: { chapterSlug: chapter.id.replace(/\.md$/, ''), figIndex: String(i) },
+      params: { chapterSlug: chapter.slug, figSlug: fig.slug ?? String(i) },
       props: { chapter, fig, figIndex: i, totalFigs: chapter.data.figures.length },
     }))
   );
@@ -38,8 +38,8 @@ if (ext === 'json') {
   }
 }
 
-const prevIdx = figIndex > 0 ? figIndex - 1 : null;
-const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
+const prevFig = figIndex > 0 ? chapter.data.figures[figIndex - 1] : null;
+const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : null;
 ---
 <html lang="fr">
   <head>
@@ -95,22 +95,22 @@ const nextIdx = figIndex < totalFigs - 1 ? figIndex + 1 : null;
 
         <!-- Navigation précédent / suivant -->
         <div class="flex justify-between mt-8">
-          {prevIdx !== null ? (
+          {prevFig ? (
             <a
-              href={`/manuscrit/${chapterSlug}/${prevIdx}`}
+              href={`/manuscrit/${chapterSlug}/${prevFig.slug ?? figIndex - 1}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >
-              ← {chapter.data.figures[prevIdx].title}
+              ← {prevFig.title}
             </a>
           ) : <span />}
-          {nextIdx !== null ? (
+          {nextFig ? (
             <a
-              href={`/manuscrit/${chapterSlug}/${nextIdx}`}
+              href={`/manuscrit/${chapterSlug}/${nextFig.slug ?? figIndex + 1}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >
-              {chapter.data.figures[nextIdx].title} →
+              {nextFig.title} →
             </a>
           ) : <span />}
         </div>

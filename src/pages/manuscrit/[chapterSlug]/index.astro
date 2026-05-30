@@ -53,7 +53,7 @@ export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
   const sorted = chapters.filter(c => c.data.show).sort((a, b) => a.data.order - b.data.order);
   return sorted.map((chapter, i) => ({
-    params: { chapterSlug: chapter.id.replace(/\.md$/, '') },
+    params: { chapterSlug: chapter.slug },
     props: { chapter, prevChapter: sorted[i - 1] ?? null, nextChapter: sorted[i + 1] ?? null },
   }));
 }
@@ -107,7 +107,7 @@ const unrefFigs = chapter.data.figures
             return (
               <div class="my-4">
                 <a
-                  href={`/manuscrit/${chapterSlug}/${seg.index}`}
+                  href={`/manuscrit/${chapterSlug}/${fig.slug ?? seg.index}`}
                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
                   style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
                 >
@@ -123,7 +123,7 @@ const unrefFigs = chapter.data.figures
               {unrefFigs.map(({ fig, i }) => (
                 <li>
                   <a
-                    href={`/manuscrit/${chapterSlug}/${i}`}
+                    href={`/manuscrit/${chapterSlug}/${fig.slug ?? i}`}
                     class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
                     style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
                   >
@@ -140,7 +140,7 @@ const unrefFigs = chapter.data.figures
         <div class="flex justify-between mt-12 pt-8" style="border-top: 1px solid var(--border);">
           {prevChapter ? (
             <a
-              href={`/manuscrit/${prevChapter.id.replace(/\.md$/, '')}`}
+              href={`/manuscrit/${prevChapter.slug}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >
@@ -149,7 +149,7 @@ const unrefFigs = chapter.data.figures
           ) : <span />}
           {nextChapter ? (
             <a
-              href={`/manuscrit/${nextChapter.id.replace(/\.md$/, '')}`}
+              href={`/manuscrit/${nextChapter.slug}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >

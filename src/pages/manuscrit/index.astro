@@ -38,7 +38,7 @@ const chapters = (await getCollection('chapters'))
 
         <div class="space-y-10">
           {chapters.map(chapter => {
-            const slug = chapter.id.replace(/\.md$/, '');
+            const slug = chapter.slug;
             const sections = extractSections(chapter.body ?? '');
             return (
               <section class="pb-8" style="border-bottom: 1px solid var(--border);">

@@ -1,5 +1,6 @@
 ---
 title: "Identification inverse des paramètres matériaux à partir d'un essai mécanique hétérogène et de la méthode FEMU"
+slug: "identification-inverse"
 description: "Réalisation d'essais mécaniques hétérogènes en traction uniaxiale. Champs de déplacement et de déformation mesurés par la stéréo corrélation d'images numériques "
 figure: ""
 tags:
