@@ -8,6 +8,8 @@
 //   "triangles":     "/data/subset_triangulation.npy",  // (T, 3)
 //   "fields":        "/data/deformations_cin.npy",      // (N, F) ou (N, F, S)
 //   "displacements": "/data/deplacements_cin_px.npy",   // (N, 2) ou (N, 2, S) — optionnel
+//   "images":        "/data/images.npy",                // (H, W, S) uint8 niveaux de gris — optionnel
+//                                                        // fond de chaque pas = images[:, :, step]
 //
 //   // Champ unique :
 //   "field_index": 0,
@@ -20,9 +22,10 @@
 //     { "index": 2, "name": "eps_yy" }
 //   ],
 //
-//   "cmap":     "RdYlGn_r",
-//   "n_colors": 10,
-//   "opacity":  0.8,
+//   "cmap":        "RdYlGn_r",
+//   "n_colors":    10,
+//   "opacity":     0.8,
+//   "label_color": "#a6adc8",   // couleur des labels numériques de la colorbar (défaut Catppuccin subtext0)
 //
 //   "steps": [
 //     { "step": 10, "image": "/data/img_step_10.png" }
@@ -52,9 +55,9 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <div class="vtk-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
 
     <!-- Colorbar : canvas et titre positionnés séparément pour alignement parfait -->
-    <canvas class="vtk-cb-canvas" width="16" height="200" style="position:absolute;right:44px;top:50%;transform:translateY(-100px);border-radius:3px;border:1px solid #45475a;pointer-events:none;z-index:10;display:block;"></canvas>
-    <span   class="vtk-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-118px);color:#cdd6f4;font:11px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
-    <div    class="vtk-cb-labels" style="position:absolute;right:64px;top:50%;transform:translateY(-100px);height:200px;pointer-events:none;z-index:10;"></div>
+    <canvas class="vtk-cb-canvas" width="20" height="300" style="position:absolute;right:44px;top:50%;transform:translateY(-150px);border-radius:3px;border:1px solid #45475a;pointer-events:none;z-index:10;display:block;"></canvas>
+    <span   class="vtk-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-172px);color:#cdd6f4;font:12px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
+    <div    class="vtk-cb-labels" style="position:absolute;right:68px;top:50%;transform:translateY(-150px);height:300px;pointer-events:none;z-index:10;"></div>
 
     <!-- Bouton reset vue -->
     <button class="vtk-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
@@ -104,9 +107,14 @@ import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
   viridis:  [[0,.267,.005,.329],[.25,.282,.341,.631],[.5,.129,.569,.553],[.75,.369,.788,.384],[1,.993,.906,.144]],
-  RdYlGn_r: [[0,.694,.004,.149],[.25,.992,.682,.380],[.5,1,1,.749],[.75,.549,.769,.290],[1,.165,.373,.165]],
+  // ColorBrewer RdYlGn — 11 points de contrôle matplotlib (rouge→jaune→vert)
+  RdYlGn:   [[0,.647,0,.149],[.1,.843,.188,.153],[.2,.957,.427,.263],[.3,.992,.682,.380],[.4,.996,.878,.545],[.5,1,1,.749],[.6,.851,.937,.545],[.7,.651,.851,.416],[.8,.400,.741,.388],[.9,.102,.596,.314],[1,0,.408,.216]],
+  // RdYlGn_r — inverse (vert→jaune→rouge)
+  RdYlGn_r: [[0,0,.408,.216],[.1,.102,.596,.314],[.2,.400,.741,.388],[.3,.651,.851,.416],[.4,.851,.937,.545],[.5,1,1,.749],[.6,.996,.878,.545],[.7,.992,.682,.380],[.8,.957,.427,.263],[.9,.843,.188,.153],[1,.647,0,.149]],
   coolwarm: [[0,.230,.299,.754],[.5,.865,.865,.865],[1,.706,.016,.150]],
   jet:      [[0,0,0,.5],[.125,0,0,1],[.375,0,1,1],[.625,1,1,0],[.875,1,0,0],[1,.5,0,0]],
+  // Spectre Rainbow par défaut d'Abaqus/CAE — 12 couleurs (bleu→cyan→vert→jaune→rouge)
+  abaqus:   [[0,0,0,1],[.091,0,.365,1],[.182,0,.725,1],[.273,0,1,.910],[.364,0,1,.545],[.455,0,1,.180],[.545,.180,1,0],[.636,.545,1,0],[.727,.910,1,0],[.818,1,.725,0],[.909,1,.365,0],[1,1,0,0]],
 };
 
 function interpolateCmap(stops: [number,number,number,number][], t: number): [number,number,number,number] {
@@ -139,6 +147,8 @@ async function fetchNpy(url: string): Promise<NpyArray> {
   else if (dtype.endsWith('i4') || dtype.endsWith('u4')) data = new Int32Array(raw);
   else if (dtype.endsWith('i8') || dtype.endsWith('u8')) { const b = new BigInt64Array(raw); data = Int32Array.from(b, v => Number(v)); }
   else if (dtype.endsWith('i2') || dtype.endsWith('u2')) data = new Int16Array(raw);
+  else if (dtype.endsWith('u1')) data = new Uint8Array(raw);
+  else if (dtype.endsWith('i1')) data = new Int8Array(raw);
   else data = new Float64Array(raw);
   return { data, shape };
 }
@@ -219,6 +229,30 @@ async function toTexture(src: string) {
   return { tex, w: img.width, h: img.height };
 }
 
+// ── Texture depuis une tranche d'un tableau numpy (H, W, S) niveaux de gris ──
+// Symétrique de toTexture : même forme de retour { tex, w, h }, même convention
+// d'ordre des lignes (haut→bas, comme getImageData), donc orientation identique
+// au cas PNG. Le gris est étendu en RGBA opaque.
+function frameToTexture(images: NpyArray, frame: number) {
+  const H = images.shape[0], W = images.shape[1], S = images.shape[2] ?? 1;
+  const f = Math.max(0, Math.min(frame, S - 1));
+  if (f !== frame) console.warn(`[VtkFigure] frame image ${frame} hors limites [0, ${S - 1}], clampée à ${f}`);
+  const data = images.data;
+  const rgba = new Uint8Array(W * H * 4);
+  for (let p = 0; p < W * H; p++) {
+    // offset numpy pour (r, c, f) en (H, W, S) : (r*W + c)*S + f, avec p = r*W + c
+    let v = data[p * S + f] as number;
+    v = v < 0 ? 0 : v > 255 ? 255 : v | 0;   // clamp [0,255] (robustesse si dtype non-uint8)
+    const o = p * 4;
+    rgba[o] = v; rgba[o + 1] = v; rgba[o + 2] = v; rgba[o + 3] = 255;
+  }
+  const sc = vtkDataArray.newInstance({ name: 'px', values: rgba, numberOfComponents: 4 });
+  const vi = vtkImageData.newInstance();
+  vi.setDimensions(W, H, 1); vi.setSpacing(1, 1, 1); vi.getPointData().setScalars(sc);
+  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(true);
+  return { tex, w: W, h: H };
+}
+
 // ── Formatage des labels ──────────────────────────────────────────────────
 // Formats supportés : ".Ne" | ".Nf" | ".Ng"  (N = nb de chiffres)
 function formatValue(v: number, fmt: string): string {
@@ -230,26 +264,39 @@ function formatValue(v: number, fmt: string): string {
   return v.toPrecision(n);
 }
 
+// Texte d'un pas : soit une chaîne unique, soit un dictionnaire indexé par
+// l'index de champ (clés JSON = index de fields_config). Pour un dictionnaire,
+// on retourne le texte du champ courant (repli sur '' si absent).
+type StepText = string | Record<string, string>;
+function resolveStepText(t: StepText | undefined, fieldIdx: number): string {
+  if (t == null) return '';
+  return typeof t === 'string' ? t : (t[String(fieldIdx)] ?? '');
+}
+function stepHasText(t: StepText | undefined): boolean {
+  if (t == null) return false;
+  return typeof t === 'string' ? t.length > 0 : Object.keys(t).length > 0;
+}
+
 // ── Colorbar ──────────────────────────────────────────────────────────────
-function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string) {
+function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string) {
   const title  = container.querySelector<HTMLElement>('.vtk-cb-title')!;
   const canvas = container.querySelector<HTMLCanvasElement>('.vtk-cb-canvas')!;
   const labels = container.querySelector<HTMLElement>('.vtk-cb-labels')!;
   labels.innerHTML = '';
   title.textContent = name;
   const ctx = canvas.getContext('2d')!;
-  const bandH = 200 / nColors;
+  const bandH = 300 / nColors;
   for (let i = 0; i < nColors; i++) {
-    // i=0 en haut → valeur max ; i=nColors-1 en bas → valeur min
-    const t = (nColors - 1 - i + 0.5) / nColors;
+    // i=0 en haut → valeur max ; i=nColors-1 en bas → valeur min (extrémités incluses)
+    const t = nColors > 1 ? (nColors - 1 - i) / (nColors - 1) : 0.5;
     const [, r, gg, b] = interpolateCmap(stops, t);
     ctx.fillStyle = `rgb(${(r*255)|0},${(gg*255)|0},${(b*255)|0})`;
-    ctx.fillRect(0, Math.floor(i * bandH), 16, Math.ceil(bandH) + 1);
+    ctx.fillRect(0, Math.floor(i * bandH), 20, Math.ceil(bandH) + 1);
   }
   for (let i = 0; i <= nColors; i++) {
     const v = vmin + (vmax - vmin) * (1 - i / nColors);
     const s = document.createElement('span');
-    s.style.cssText = `position:absolute;top:${i * 200 / nColors}px;right:0;transform:translateY(-50%);color:#a6adc8;font:10px monospace;text-align:right;white-space:nowrap;`;
+    s.style.cssText = `position:absolute;top:${i * 300 / nColors}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
     s.textContent = formatValue(v, labelFmt);
     labels.appendChild(s);
   }
@@ -264,21 +311,22 @@ async function initVtk(container: HTMLElement) {
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
 
-  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e' } = cfg;
-  const steps: { step: number; image: string; text?: string }[] = cfg.steps ?? [];
+  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8' } = cfg;
+  const steps: { step: number; image?: string; image_index?: number; text?: StepText }[] = cfg.steps ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
 
   // Charger les .npy
-  const [coordsArr, triArr, fieldsArr, dispArr] = await Promise.all([
+  const [coordsArr, triArr, fieldsArr, dispArr, imagesArr] = await Promise.all([
     fetchNpy(cfg.coords), fetchNpy(cfg.triangles), fetchNpy(cfg.fields),
     cfg.displacements ? fetchNpy(cfg.displacements) : Promise.resolve(null),
+    cfg.images ? fetchNpy(cfg.images) : Promise.resolve(null),
   ]);
   const raw: RawData = { coords: coordsArr, triangles: triArr, fields: fieldsArr, disp: dispArr };
 
   // ── Panneau texte ─────────────────────────────────────────────────────────
   const textPanel   = container.querySelector<HTMLElement>('.vtk-text-panel')!;
   const textContent = container.querySelector<HTMLElement>('.vtk-text-content')!;
-  const hasText = steps.some(s => s.text);
+  const hasText = steps.some(s => stepHasText(s.text));
   if (hasText) textPanel.style.display = 'block';
 
   // ── Renderer ─────────────────────────────────────────────────────────────
@@ -306,12 +354,18 @@ async function initVtk(container: HTMLElement) {
     const range = (vmax - vmin) || 1;
     const eps = range * 1e-7;
     for (let i = 0; i < n_colors; i++) {
-      const t = (i + 0.5) / n_colors;
+      // Échantillonnage extrémités incluses : bande 0 → couleur min, bande n-1 → couleur max (rouge pur Abaqus)
+      const t = n_colors > 1 ? i / (n_colors - 1) : 0.5;
       const [, r, g, b] = interpolateCmap(cmapStops, t);
       const v_lo = vmin + (i / n_colors) * range;
       const v_hi = vmin + ((i + 1) / n_colors) * range;
       lut.addRGBPoint(v_lo, r, g, b);
-      if (i < n_colors - 1) lut.addRGBPoint(v_hi - eps, r, g, b);
+      // Borne supérieure de CHAQUE bande, y compris la dernière : sans ce nœud,
+      // la bande haute n'a qu'un seul point → vtk.js remplit (v_lo, vmax) avec la
+      // couleur de la bande précédente et ne place la dernière couleur (rouge
+      // Abaqus) qu'au max exact → rouge de surface nulle (cf. preuve LUT). Pour la
+      // dernière bande on va jusqu'à v_hi = vmax (pas de eps) pour couvrir tout le haut.
+      lut.addRGBPoint(i < n_colors - 1 ? v_hi - eps : v_hi, r, g, b);
     }
     lut.setMappingRange(vmin, vmax);
     lut.updateRange();
@@ -338,8 +392,18 @@ async function initVtk(container: HTMLElement) {
   meshActor.getProperty().setLighting(false);
   renderer.addActor(meshActor);
 
+  // Hauteur de référence pour le retournement vertical (pos_y = H - y).
+  // Avec image : hauteur de l'image. Sans image : max y des coordonnées,
+  // ce qui conserve la même orientation que le cas avec image (coords en px).
+  let dataH = 1;
+  for (let i = 0; i < raw.coords.shape[0]; i++) {
+    const y = idx(raw.coords.data, raw.coords.shape, i, 1);
+    if (y > dataH) dataH = y;
+  }
+
   let bgActor: any = null;
-  let imgH = 1;
+  let imgH = dataH;
+  let cameraInit = false;
   const texCache = new Map<string, Awaited<ReturnType<typeof toTexture>>>();
 
   const cam = renderer.getActiveCamera();
@@ -350,23 +414,46 @@ async function initVtk(container: HTMLElement) {
   let currentFieldIdx = fieldsConfig[0].index;
 
   async function render(stepPos: number, fieldIdx: number) {
-    const { step, image } = steps[stepPos];
+    const { step, image, image_index } = steps[stepPos];
 
-    // Image de fond
-    if (!texCache.has(image)) texCache.set(image, await toTexture(image));
-    const { tex, w, h } = texCache.get(image)!;
-    if (!bgActor) {
-      imgH = h;
-      const plane = vtkPlaneSource.newInstance();
-      plane.setOrigin(0,h,-1); plane.setPoint1(w,h,-1); plane.setPoint2(0,0,-1); plane.update();
-      const pm = vtkMapper.newInstance(); pm.setInputConnection(plane.getOutputPort());
-      bgActor = vtkActor.newInstance(); bgActor.setMapper(pm);
-      renderer.addActor(bgActor);
-      cam.setPosition(w/2,h/2,10); cam.setFocalPoint(w/2,h/2,0);
-      cam.setViewUp(0,1,0); cam.setParallelScale(h/2);
+    // ── Fond : URL PNG/JPEG/WebP > frame du tableau numpy > aucun ──────────
+    let texInfo: { tex: any; w: number; h: number } | null = null;
+    if (image) {
+      if (!texCache.has(image)) texCache.set(image, await toTexture(image));
+      texInfo = texCache.get(image)!;
+    } else if (imagesArr) {
+      const frame = image_index ?? step;
+      const key = `npy#${frame}`;
+      if (!texCache.has(key)) texCache.set(key, frameToTexture(imagesArr, frame));
+      texInfo = texCache.get(key)!;
     }
-    bgActor.getTextures().forEach((t: any) => bgActor.removeTexture(t));
-    bgActor.addTexture(tex);
+
+    if (texInfo) {
+      const { tex, w, h } = texInfo;
+      if (!bgActor) {
+        imgH = h;
+        const plane = vtkPlaneSource.newInstance();
+        plane.setOrigin(0,h,-1); plane.setPoint1(w,h,-1); plane.setPoint2(0,0,-1); plane.update();
+        const pm = vtkMapper.newInstance(); pm.setInputConnection(plane.getOutputPort());
+        bgActor = vtkActor.newInstance(); bgActor.setMapper(pm);
+        renderer.addActor(bgActor);
+        cam.setPosition(w/2,h/2,10); cam.setFocalPoint(w/2,h/2,0);
+        cam.setViewUp(0,1,0); cam.setParallelScale(h/2);
+        cameraInit = true;
+      }
+      bgActor.getTextures().forEach((t: any) => bgActor.removeTexture(t));
+      bgActor.addTexture(tex);
+      bgActor.setVisibility(true);
+      meshActor.getProperty().setOpacity(opacity);
+    } else {
+      // Pas de fond pour ce pas : masquer le fond du pas précédent et rendre
+      // le maillage opaque. Une scène uniquement translucide ne se rafraîchit
+      // pas de façon fiable sans interaction dans vtk.js — il faut un acteur
+      // opaque pour que renWin.render() repeigne sur un simple changement de
+      // données (cf. LRN-014).
+      if (bgActor) bgActor.setVisibility(false);
+      meshActor.getProperty().setOpacity(1);
+    }
 
     // Positions (mises à jour si le pas change)
     if (step !== currentStep) {
@@ -389,17 +476,23 @@ async function initVtk(container: HTMLElement) {
     configureLut(vmin, vmax);
     meshMapper.setScalarRange(vmin, vmax);
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-    drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format);
+    drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
     currentFieldIdx = fieldIdx;
 
     // Texte associé au pas
-    if (hasText) textContent.innerHTML = steps[stepPos].text ?? '';
+    if (hasText) textContent.innerHTML = resolveStepText(steps[stepPos].text, fieldIdx);
+
+    // Cadrage caméra si aucune image n'a encore positionné la vue (figure sans fond)
+    if (!cameraInit) {
+      renderer.resetCamera();
+      cameraInit = true;
+    }
 
     renWin.render();
 
-    // Précharger l'image suivante
-    const next = (stepPos + 1) % steps.length;
-    if (!texCache.has(steps[next].image)) toTexture(steps[next].image).then(t => texCache.set(steps[next].image, t));
+    // Précharger l'image suivante (si elle existe)
+    const nextImage = steps[(stepPos + 1) % steps.length].image;
+    if (nextImage && !texCache.has(nextImage)) toTexture(nextImage).then(t => texCache.set(nextImage, t));
   }
 
   // ── Sélecteur de champs ───────────────────────────────────────────────

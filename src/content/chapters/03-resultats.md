@@ -4,17 +4,29 @@ order: 4
 description: "Validation des outils développés pour le FEMU : méthode d'alignement, méthode du calcul des 
 déformations par le formalisme de la CIN-locale et le logiciel FEMU."
 figures:
-    - filename: "test.json"
-      title: "Figure 4.1 — Champ déformation obtenu par la DIC à partir des images synthétiques"
-      slug: "deformation-dic-1"
-    - filename: "test.json"
-      title: "Figure 4.2 — Champ déformation obtenu par la DIC à partir des images synthétiques"
-      slug: "deformation-dic-2"
+    - filename: "Traction_homogene-champ_deformation_cin.json"
+      title: "Figure 4.1 — Traction homogène - Champ déformation calculé par la DIC à partir des images synthétiques"
+      slug: "traction-homogene-champ-deformation-calcule-par-matchid"
+    - filename: "Traction_homogene-Differences_relatives_absolues_deformation_cin_sl_u_cin.json"
+      title: "Figure 4.2 — Traction homogène - Différences relatives absolues champ déformation calculé la DIC à partir des images synthétiques"
+      slug: "traction-homogene-differences-relatives-absolues-champ-deformation-calcule-par-matchid"
+    - filename: "Cisaillement_homogene-champ_deformation_cin.json"
+      title: "Figure 4.3 — Cisaillement homogène - Champ déformation calculé la DIC à partir des images synthétiques"
+      slug: "cisaillement-homogene-champ-deformation-calcule-par-matchid"
+    - filename: "Cisaillement_homogene-Differences_relatives_absolues_deformation_cin_sl_u_cin.json"
+      title: "Figure 4.4 — Cisaillement homogène - Différences relatives absolues champ déformation calculé la DIC à partir des images synthétiques"
+      slug: "cisaillement-homogene-differences-relatives-absolues-champ-deformation-calcule-par-matchid"
+    - filename: "eprouvette_notched_champ_deformation.json"
+      title: "Figure 4.4 — Éprouvette entaillée - Champ déformation calculé par la DIC à partir des images synthétiques"
+      slug: "eprouvette-entaillee-champ-deformation-calcule-par-matchid"
+    - filename: "eprouvette_notched_difference_absolue_champ_deformation.json"
+      title: "Figure 4.5 — Éprouvette entaillée - Différence absolue du champ déformation calculé par la DIC à partir des images synthétiques"
+      slug: "eprouvette-entaillee-difference-absolue-champ-deformation-calcule-par-matchid"
 show: True
 slug: validation-outils-numeriques-FEMU
 ---
 
-# Méthode d'alignement et extraction des conditions aux limites
+<!-- # Méthode d'alignement et extraction des conditions aux limites -->
 
 # Méthode du calcul des déformations par le formalisme de la CIN-locale
 
@@ -24,20 +36,20 @@ slug: validation-outils-numeriques-FEMU
 
 #### Résultats de la DIC
 
-##### Validation de l'outil StrainLeveling
+Le champ de déformation calculé par MatchID à partir des images synthétiques est présenté sur la figure 4.1
 
 <!-- figure: 0 -->
-
-Les déformations principales :
-
 <!-- figure: 1 -->
-
-Une version 3D
-
-<!-- figure: 2 -->
 
 ### Cisaillement homogène
 
 #### Résultats de la DIC
 
-##### Validation de l'outil StrainLeveling
+<!-- figure: 2 -->
+<!-- figure: 3 -->
+
+## Éprouvette entaillée
+
+<!-- figure: 4 -->
+
+<!-- figure: 5 -->
