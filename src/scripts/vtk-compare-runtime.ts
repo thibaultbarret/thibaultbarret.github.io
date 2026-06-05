@@ -223,19 +223,81 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     currentFieldIdx = fieldIdx;
   }
 
-  // Exposer l'état pour les tâches suivantes (contrôles, sync caméra, tooltip)
-  (container as any).__compare = {
-    panels, steps, fieldsConfig, render,
-    label_format, n_colors, opacity,
-    state: () => ({ currentStep, currentFieldIdx }),
-  };
+  // ── Panneau texte partagé ─────────────────────────────────────────────
+  const textPanel   = container.querySelector<HTMLElement>('.vtkc-text-panel')!;
+  const textContent = container.querySelector<HTMLElement>('.vtkc-text-content')!;
+  const hasText = steps.some(s => stepHasText(s.text));
+  if (hasText) textPanel.style.display = 'block';
 
-  // Premier rendu
-  await render(0, fieldsConfig[0].index);
+  // ── Sélecteur de champ partagé ────────────────────────────────────────
+  const fieldsDiv = container.querySelector<HTMLElement>('.vtkc-fields')!;
+  let sliderPos = 0;
+
+  async function goTo(pos: number) {
+    sliderPos = Math.max(0, Math.min(pos, steps.length - 1));
+    label.textContent = `${sliderPos + 1}/${steps.length}`;
+    slider.value = String(sliderPos);
+    await render(sliderPos, currentFieldIdx);
+    if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, currentFieldIdx);
+  }
+
+  if (fieldsConfig.length > 1) {
+    fieldsDiv.style.display = 'flex';
+    fieldsConfig.forEach(({ index, name }) => {
+      const btn = document.createElement('button');
+      btn.textContent = name;
+      btn.dataset.idx = String(index);
+      const active = index === fieldsConfig[0].index;
+      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
+      btn.addEventListener('click', async () => {
+        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
+        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
+        currentFieldIdx = index;
+        await render(sliderPos, index);
+        if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, index);
+      });
+      fieldsDiv.appendChild(btn);
+    });
+  }
+
+  // ── Slider de pas partagé ─────────────────────────────────────────────
+  const controls = container.querySelector<HTMLElement>('.vtkc-controls')!;
+  const slider   = container.querySelector<HTMLInputElement>('.vtkc-slider')!;
+  const label    = container.querySelector<HTMLElement>('.vtkc-label')!;
+  const playBtn  = container.querySelector<HTMLButtonElement>('.vtkc-play')!;
+  const firstBtn = container.querySelector<HTMLButtonElement>('.vtkc-first')!;
+  const prevBtn  = container.querySelector<HTMLButtonElement>('.vtkc-prev')!;
+  const nextBtn  = container.querySelector<HTMLButtonElement>('.vtkc-next')!;
+  const lastBtn  = container.querySelector<HTMLButtonElement>('.vtkc-last')!;
+  let animTimer: ReturnType<typeof setInterval> | null = null;
+  function stopAnim() { if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; } }
+
+  if (steps.length > 1 || fieldsConfig.length > 1) controls.style.display = 'flex';
+  if (steps.length > 1) {
+    slider.max = String(steps.length - 1);
+    const datalist = container.querySelector<HTMLDataListElement>('.vtkc-datalist')!;
+    const listId = 'vtkc-dl-' + Math.random().toString(36).slice(2);
+    datalist.id = listId; slider.setAttribute('list', listId);
+    for (let i = 0; i < steps.length; i++) { const opt = document.createElement('option'); opt.value = String(i); datalist.appendChild(opt); }
+    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
+    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
+    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos - 1); });
+    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos + 1); });
+    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
+    playBtn.addEventListener('click', () => {
+      if (animTimer) stopAnim();
+      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((sliderPos + 1) % steps.length), 200); }
+    });
+  }
+
+  // ── Premier rendu ─────────────────────────────────────────────────────
+  await goTo(0);
   container.querySelector<HTMLElement>('.vtkc-loading')!.style.display = 'none';
 
-  // Réajuste tous les render windows au resize du conteneur
   new ResizeObserver(() => {
     panels.forEach(p => { p.rw.resize(); p.renWin.render(); });
   }).observe(container);
+
+  // Exposer l'état pour la sync caméra / tooltip (Task 5)
+  (container as any).__compare = { panels, label_format, n_colors };
 }
