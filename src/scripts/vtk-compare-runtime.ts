@@ -245,8 +245,10 @@ export async function initCompare(container: HTMLElement): Promise<void> {
       p.scalarsArr.setData(sc);
       p.scalarsArr.modified(); p.pd.modified();
       p.meshMapper.setScalarRange(vmin, vmax);
-      // Texte propre au panneau, suit le pas (st.step) et le champ courant
-      if (p.textEl.style.display !== 'none') {
+      // Texte propre au panneau, suit le pas (st.step) et le champ courant.
+      // `anyText` est la source de vérité (les zones texte ne sont créées que
+      // dans ce cas) — ne pas se fier à l'état DOM display.
+      if (anyText) {
         p.textEl.innerHTML = resolvePanelText(p.cfg.text, st.step, fieldIdx);
       }
       if (!p.cameraInit) { p.renderer.resetCamera(); p.cameraInit = true; }
