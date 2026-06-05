@@ -349,6 +349,9 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     syncing = true; // éviter la cascade pendant le reset groupé
     panels.forEach(p => { p.renderer.resetCamera(); p.renWin.render(); });
     syncing = false;
+    // En mode lié, réaligner toutes les caméras sur le 1er panneau pour que
+    // l'état après reset soit cohérent immédiatement (et pas seulement au 1er drag).
+    if (camerasLinked && panels.length) syncFrom(panels[0]);
   });
 
   // ── Tooltips de valeur (un par panneau) ───────────────────────────────
