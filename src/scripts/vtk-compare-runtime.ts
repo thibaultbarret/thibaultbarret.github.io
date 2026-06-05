@@ -305,6 +305,81 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     panels.forEach(p => { p.rw.resize(); p.renWin.render(); });
   }).observe(container);
 
+  // ── Synchronisation des caméras ───────────────────────────────────────
+  let camerasLinked = true;
+  let syncing = false;
+  function syncFrom(src: Panel) {
+    if (!camerasLinked || syncing) return;
+    syncing = true;
+    const pos = src.cam.getPosition();
+    const fp  = src.cam.getFocalPoint();
+    const up  = src.cam.getViewUp();
+    const ps  = src.cam.getParallelScale();
+    for (const p of panels) {
+      if (p === src) continue;
+      p.cam.setPosition(...pos);
+      p.cam.setFocalPoint(...fp);
+      p.cam.setViewUp(...up);
+      p.cam.setParallelScale(ps);
+      p.renderer.resetCameraClippingRange(); // cf. LRN-010
+      p.renWin.render();
+    }
+    syncing = false;
+  }
+  panels.forEach(p => { p.cam.onModified(() => syncFrom(p)); });
+
+  const linkBtn = container.querySelector<HTMLButtonElement>('.vtkc-link')!;
+  linkBtn.style.display = 'block';
+  function refreshLinkBtn() {
+    linkBtn.textContent = camerasLinked ? '🔗' : '🚫';
+    linkBtn.style.background = camerasLinked ? '#89b4fa' : '#313244';
+    linkBtn.title = camerasLinked ? 'Caméras liées (cliquer pour délier)' : 'Caméras déliées (cliquer pour lier)';
+  }
+  refreshLinkBtn();
+  linkBtn.addEventListener('click', () => {
+    camerasLinked = !camerasLinked;
+    refreshLinkBtn();
+    if (camerasLinked && panels.length) syncFrom(panels[0]); // réaligne sur le 1er
+  });
+
+  // ── Bouton reset (tous les panneaux) ──────────────────────────────────
+  const resetBtn = container.querySelector<HTMLButtonElement>('.vtkc-reset')!;
+  resetBtn.style.display = 'block';
+  resetBtn.addEventListener('click', () => {
+    syncing = true; // éviter la cascade pendant le reset groupé
+    panels.forEach(p => { p.renderer.resetCamera(); p.renWin.render(); });
+    syncing = false;
+  });
+
+  // ── Tooltips de valeur (un par panneau) ───────────────────────────────
+  panels.forEach((p) => {
+    const picker = vtkPointPicker.newInstance();
+    picker.setTolerance(0.01);
+    let cssX = 0, cssY = 0;
+    p.canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
+      const rect = p.canvasEl.getBoundingClientRect();
+      cssX = e.clientX - rect.left; cssY = e.clientY - rect.top;
+    });
+    p.canvasEl.addEventListener('mouseleave', () => { p.tooltip.style.display = 'none'; });
+    p.rw.getInteractor().onMouseMove((callData: any) => {
+      const pos = callData.position;
+      picker.pick([pos.x, pos.y, 0], p.renderer);
+      const ptId = picker.getPointId();
+      if (ptId >= 0 && ptId < p.scalarsArr.getNumberOfTuples()) {
+        const val = p.scalarsArr.getValue(ptId);
+        if (isFinite(val)) {
+          p.tooltip.textContent = formatValue(val, label_format);
+          p.tooltip.style.display = 'block';
+          const rect = p.canvasEl.getBoundingClientRect();
+          p.tooltip.style.left = `${Math.min(cssX + 12, rect.width - 90)}px`;
+          p.tooltip.style.top  = `${Math.max(cssY - 28, 4)}px`;
+          return;
+        }
+      }
+      p.tooltip.style.display = 'none';
+    });
+  });
+
   // Exposer l'état pour la sync caméra / tooltip (Task 5)
   (container as any).__compare = { panels, label_format, n_colors };
 }
