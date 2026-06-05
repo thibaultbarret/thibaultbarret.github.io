@@ -16,10 +16,10 @@ figures:
     - filename: "Cisaillement_homogene-Differences_relatives_absolues_deformation_cin_sl_u_cin.json"
       title: "Figure 4.4 — Cisaillement homogène - Différences relatives absolues champ déformation calculé la DIC à partir des images synthétiques"
       slug: "cisaillement-homogene-differences-relatives-absolues-champ-deformation-calcule-par-matchid"
-    - filename: "eprouvette_notched_champ_deformation.json"
+    - filename: "Eprouvette_notched-champ_deformation_cin.json"
       title: "Figure 4.4 — Éprouvette entaillée - Champ déformation calculé par la DIC à partir des images synthétiques"
       slug: "eprouvette-entaillee-champ-deformation-calcule-par-matchid"
-    - filename: "eprouvette_notched_difference_absolue_champ_deformation.json"
+    - filename: "Eprouvette_notched-differences_absolues_champ_deformation_cin_sl_u_cin.json"
       title: "Figure 4.5 — Éprouvette entaillée - Différence absolue du champ déformation calculé par la DIC à partir des images synthétiques"
       slug: "eprouvette-entaillee-difference-absolue-champ-deformation-calcule-par-matchid"
 show: True

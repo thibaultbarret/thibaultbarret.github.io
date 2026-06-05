@@ -1,0 +1,239 @@
+{
+    "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
+    "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
+    "displacements": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/deplacements_cin_px.npy",
+    "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/deformations_cin.npy",
+    "fields_config": [
+        {
+            "index": 0,
+            "name": "ε_xx"
+        },
+        {
+            "index": 1,
+            "name": "ε_yy"
+        },
+        {
+            "index": 2,
+            "name": "ε_xy"
+        },
+        {
+            "index": 3,
+            "name": "ε_1"
+        },
+        {
+            "index": 4,
+            "name": "ε_2"
+        },
+        {
+            "index": 5,
+            "name": "ε_vm"
+        }
+    ],
+    "cmap": "abaqus",
+    "label_format": ".3f",
+    "n_colors": 10,
+    "opacity": 0.8,
+    "steps": [
+        {
+            "step": 0,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_1.png"
+        },
+        {
+            "step": 1,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_2.png"
+        },
+        {
+            "step": 2,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_3.png"
+        },
+        {
+            "step": 3,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_4.png"
+        },
+        {
+            "step": 4,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_5.png"
+        },
+        {
+            "step": 5,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_6.png"
+        },
+        {
+            "step": 6,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_7.png"
+        },
+        {
+            "step": 7,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_8.png"
+        },
+        {
+            "step": 8,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_9.png"
+        },
+        {
+            "step": 9,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_10.png"
+        },
+        {
+            "step": 10,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_11.png"
+        },
+        {
+            "step": 11,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_12.png"
+        },
+        {
+            "step": 12,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_13.png"
+        },
+        {
+            "step": 13,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_14.png"
+        },
+        {
+            "step": 14,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_15.png"
+        },
+        {
+            "step": 15,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_16.png"
+        },
+        {
+            "step": 16,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_17.png"
+        },
+        {
+            "step": 17,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_18.png"
+        },
+        {
+            "step": 18,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_19.png"
+        },
+        {
+            "step": 19,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_20.png"
+        },
+        {
+            "step": 20,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_21.png"
+        },
+        {
+            "step": 21,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_22.png"
+        },
+        {
+            "step": 22,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_23.png"
+        },
+        {
+            "step": 23,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_24.png"
+        },
+        {
+            "step": 24,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_25.png"
+        },
+        {
+            "step": 25,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_26.png"
+        },
+        {
+            "step": 26,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_27.png"
+        },
+        {
+            "step": 27,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_28.png"
+        },
+        {
+            "step": 28,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_29.png"
+        },
+        {
+            "step": 29,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_30.png"
+        },
+        {
+            "step": 30,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_31.png"
+        },
+        {
+            "step": 31,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_32.png"
+        },
+        {
+            "step": 32,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_33.png"
+        },
+        {
+            "step": 33,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_34.png"
+        },
+        {
+            "step": 34,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_35.png"
+        },
+        {
+            "step": 35,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_36.png"
+        },
+        {
+            "step": 36,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_37.png"
+        },
+        {
+            "step": 37,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_38.png"
+        },
+        {
+            "step": 38,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_39.png"
+        },
+        {
+            "step": 39,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_40.png"
+        },
+        {
+            "step": 40,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_41.png"
+        },
+        {
+            "step": 41,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_42.png"
+        },
+        {
+            "step": 42,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_43.png"
+        },
+        {
+            "step": 43,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_44.png"
+        },
+        {
+            "step": 44,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_45.png"
+        },
+        {
+            "step": 45,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_46.png"
+        },
+        {
+            "step": 46,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_47.png"
+        },
+        {
+            "step": 47,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_48.png"
+        },
+        {
+            "step": 48,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_49.png"
+        },
+        {
+            "step": 49,
+            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_50.png"
+        }
+    ]
+}
+
