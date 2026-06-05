@@ -5,6 +5,7 @@ import path from 'node:path';
 import Nav from '../../../components/Nav.astro';
 import VtkFigure from '../../../components/VtkFigure.astro';
 import VtkFigure3D from '../../../components/VtkFigure3D.astro';
+import VtkFigureCompare from '../../../components/VtkFigureCompare.astro';
 import '../../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -24,15 +25,17 @@ const ext = fig.filename.split('.').pop();
 const isJs  = ext === 'js';
 const figId = `fig-${figIndex}`;
 
-// Détecte si le JSON est une figure 3D (clé `dic` ou `fe` au top level)
+// Détecte le type de figure VTK d'après les clés du JSON (lu au build).
+let isVtkCompare = false;
 let isVtk3D = false;
 let isVtk   = false;
 if (ext === 'json') {
   try {
     const jsonPath = path.join(process.cwd(), 'public', 'figures', 'manuscrit', fig.filename);
     const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-    isVtk3D = !!(json.dic || json.fe);
-    isVtk   = !isVtk3D;
+    isVtkCompare = Array.isArray(json.panels);
+    isVtk3D      = !isVtkCompare && !!(json.dic || json.fe);
+    isVtk        = !isVtkCompare && !isVtk3D;
   } catch {
     isVtk = true;
   }
@@ -65,6 +68,9 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
         <h1 class="font-serif text-2xl font-semibold mb-6" style="color: var(--text);">{fig.title}</h1>
 
         <!-- Figure -->
+        {isVtkCompare && (
+          <VtkFigureCompare src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+        )}
         {isVtk && (
           <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
         )}
@@ -81,7 +87,7 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
             <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
           </>
         )}
-        {!isVtk && !isVtk3D && !isJs && (
+        {!isVtkCompare && !isVtk && !isVtk3D && !isJs && (
           <iframe
             src={`/figures/manuscrit/${fig.filename}`}
             width="100%"
