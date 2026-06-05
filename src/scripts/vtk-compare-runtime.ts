@@ -18,16 +18,31 @@ import vtkMouseCameraTrackballZoomManipulator  from '@kitware/vtk.js/Interaction
 import {
   CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
-  resolveStepText, stepHasText,
+  resolveStepText,
 } from './vtk-core';
 import type { NpyArray, RawData, StepText, ColorbarEls } from './vtk-core';
 
 type FieldDef = { index: number; name: string };
+
+// Texte propre à un panneau : soit une légende fixe (chaîne), soit un
+// dictionnaire indexé par valeur de pas (`step`), dont chaque valeur est
+// elle-même un StepText (chaîne commune, ou dict indexé par index de champ).
+type PanelText = string | Record<string, StepText>;
+function resolvePanelText(t: PanelText | undefined, stepValue: number, fieldIdx: number): string {
+  if (t == null) return '';
+  if (typeof t === 'string') return t;
+  return resolveStepText(t[String(stepValue)], fieldIdx);
+}
+function panelHasText(t: PanelText | undefined): boolean {
+  if (t == null) return false;
+  return typeof t === 'string' ? t.length > 0 : Object.keys(t).length > 0;
+}
+
 interface PanelCfg {
   title?: string; coords: string; triangles: string; fields: string;
-  displacements?: string; images?: string;
+  displacements?: string; images?: string; text?: PanelText;
 }
-interface StepCfg { step: number; image?: string; image_index?: number; text?: StepText }
+interface StepCfg { step: number; image?: string; image_index?: number }
 
 // État runtime d'un panneau (un render window par panneau)
 interface Panel {
@@ -37,7 +52,7 @@ interface Panel {
   pd: any; pts: any; scalarsArr: any; meshActor: any; meshMapper: any;
   bgActor: any; imgH: number; cameraInit: boolean;
   texCache: Map<string, { tex: any; w: number; h: number }>;
-  tooltip: HTMLElement;
+  tooltip: HTMLElement; textEl: HTMLElement;
 }
 
 export async function initCompare(container: HTMLElement): Promise<void> {
@@ -52,6 +67,13 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   const panelsCfg: PanelCfg[] = cfg.panels ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
 
+  // Si AU MOINS un panneau a du texte, on réserve une zone de texte de hauteur
+  // FIXE et IDENTIQUE sur TOUS les panneaux (même vides) pour que les canvas
+  // restent alignés et ne sautent pas au changement de pas. Hauteur réglable
+  // via `text_height` (px), défaut 64.
+  const anyText = panelsCfg.some(pc => panelHasText(pc.text));
+  const textHeight = typeof cfg.text_height === 'number' ? cfg.text_height : 64;
+
   const panelsRow = container.querySelector<HTMLElement>('.vtkc-panels')!;
 
   // LUT unique partagée par tous les mappers
@@ -60,9 +82,16 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   // ── Construire les panneaux ───────────────────────────────────────────
   const panels: Panel[] = [];
   for (const pcfg of panelsCfg) {
-    // DOM du panneau : conteneur + titre overlay + tooltip
+    // DOM du panneau : colonne [zone texte au-dessus] + [hôte de rendu]
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'flex:1; position:relative; overflow:hidden; min-width:0;';
+    wrap.style.cssText = 'flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #45475a; border-radius:4px;';
+    // Zone texte propre au panneau, au-dessus de la figure (masquée si pas de texte)
+    const textEl = document.createElement('div');
+    textEl.style.cssText = 'display:none; flex-shrink:0; box-sizing:border-box; overflow-y:auto; padding:10px 12px; background:rgba(24,24,37,.95); border-bottom:1px solid #45475a; color:#cdd6f4; font:12px/1.6 sans-serif;';
+    if (anyText) { textEl.style.display = 'block'; textEl.style.height = `${textHeight}px`; }
+    // Hôte du rendu : relatif, contient le canvas vtk + le titre + le tooltip
+    const canvasHost = document.createElement('div');
+    canvasHost.style.cssText = 'flex:1; position:relative; overflow:hidden; min-height:0;';
     const canvasEl = document.createElement('div');
     canvasEl.style.cssText = 'position:absolute; inset:0; overflow:hidden;';
     const titleEl = document.createElement('span');
@@ -70,7 +99,8 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     titleEl.style.cssText = 'position:absolute;top:8px;left:10px;z-index:10;color:#cdd6f4;font:12px monospace;background:rgba(24,24,37,.7);padding:2px 6px;border-radius:3px;pointer-events:none;';
     const tooltip = document.createElement('div');
     tooltip.style.cssText = 'display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;';
-    wrap.append(canvasEl, titleEl, tooltip);
+    canvasHost.append(canvasEl, titleEl, tooltip);
+    wrap.append(textEl, canvasHost);
     panelsRow.appendChild(wrap);
 
     // Charger les .npy du panneau
@@ -131,7 +161,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
       cfg: pcfg, rw, renderer, renWin, cam, canvasEl, raw, images: imagesArr,
       pd, pts, scalarsArr, meshActor, meshMapper,
       bgActor: null, imgH: dataH, cameraInit: false,
-      texCache: new Map(), tooltip,
+      texCache: new Map(), tooltip, textEl,
     });
   }
 
@@ -208,25 +238,23 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
     drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
 
-    // 3) Appliquer scalaires + range à chaque panneau, puis rendre
+    // 3) Appliquer scalaires + range + texte à chaque panneau, puis rendre
     panels.forEach((p, k) => {
       const sc = currentScalars[k];
       for (let i = 0; i < sc.length; i++) if (!isFinite(sc[i])) sc[i] = vmin;
       p.scalarsArr.setData(sc);
       p.scalarsArr.modified(); p.pd.modified();
       p.meshMapper.setScalarRange(vmin, vmax);
+      // Texte propre au panneau, suit le pas (st.step) et le champ courant
+      if (p.textEl.style.display !== 'none') {
+        p.textEl.innerHTML = resolvePanelText(p.cfg.text, st.step, fieldIdx);
+      }
       if (!p.cameraInit) { p.renderer.resetCamera(); p.cameraInit = true; }
       p.renWin.render();
     });
 
     currentFieldIdx = fieldIdx;
   }
-
-  // ── Panneau texte partagé ─────────────────────────────────────────────
-  const textPanel   = container.querySelector<HTMLElement>('.vtkc-text-panel')!;
-  const textContent = container.querySelector<HTMLElement>('.vtkc-text-content')!;
-  const hasText = steps.some(s => stepHasText(s.text));
-  if (hasText) textPanel.style.display = 'block';
 
   // ── Contrôles (récupérés AVANT goTo pour éviter tout TDZ sur slider/label) ──
   const controls = container.querySelector<HTMLElement>('.vtkc-controls')!;
@@ -249,7 +277,6 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     label.textContent = `${pos2 + 1}/${steps.length}`;
     slider.value = String(pos2);
     await render(pos2, currentFieldIdx);
-    if (hasText) textContent.innerHTML = resolveStepText(steps[pos2].text, currentFieldIdx);
   }
 
   // ── Sélecteur de champ partagé ────────────────────────────────────────
@@ -267,20 +294,17 @@ export async function initCompare(container: HTMLElement): Promise<void> {
         btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
         currentFieldIdx = index;
         await render(sliderPos, index);
-        if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, index);
       });
       fieldsDiv.appendChild(btn);
     });
   }
 
   // ── Slider de pas partagé ─────────────────────────────────────────────
+  // La barre du bas ne contient plus que le transport : visible seulement s'il
+  // y a plusieurs pas (le sélecteur de champ est un overlay haut, indépendant).
   const hasSteps = steps.length > 1;
-  if (hasSteps || fieldsConfig.length > 1) controls.style.display = 'flex';
-  // Un seul pas : masquer les contrôles de transport (sinon boutons morts visibles)
-  if (!hasSteps) {
-    [firstBtn, prevBtn, playBtn, nextBtn, lastBtn, slider, label].forEach(el => { el.style.display = 'none'; });
-  }
   if (hasSteps) {
+    controls.style.display = 'flex';
     slider.max = String(steps.length - 1);
     const datalist = container.querySelector<HTMLDataListElement>('.vtkc-datalist')!;
     const listId = 'vtkc-dl-' + Math.random().toString(36).slice(2);
