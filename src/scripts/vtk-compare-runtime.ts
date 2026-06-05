@@ -188,8 +188,9 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     currentScalars.length = 0;
     let vmin = Infinity, vmax = -Infinity;
     for (const p of panels) {
+      const prevImgH = p.imgH;
       await updatePanelBackground(p, st);
-      if (st.step !== currentStep) {
+      if (st.step !== currentStep || p.imgH !== prevImgH) {
         p.pts.setData(buildPositions(p.raw, st.step, p.imgH), 3);
         p.pts.modified(); p.pd.modified();
       }
