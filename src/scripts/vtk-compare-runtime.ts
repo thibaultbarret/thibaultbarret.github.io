@@ -145,7 +145,6 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   // ── Rendu partagé ─────────────────────────────────────────────────────
   let currentStep = -1;
   let currentFieldIdx = fieldsConfig[0].index;
-  const currentScalars: Float32Array[] = [];
 
   async function updatePanelBackground(p: Panel, st: StepCfg) {
     let texInfo: { tex: any; w: number; h: number } | null = null;
@@ -185,7 +184,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     const st = steps[stepPos];
 
     // 1) Fonds + scalaires de chaque panneau, et union des bornes
-    currentScalars.length = 0;
+    const currentScalars: Float32Array[] = [];
     let vmin = Infinity, vmax = -Infinity;
     for (const p of panels) {
       const prevImgH = p.imgH;
@@ -229,38 +228,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   const hasText = steps.some(s => stepHasText(s.text));
   if (hasText) textPanel.style.display = 'block';
 
-  // ── Sélecteur de champ partagé ────────────────────────────────────────
-  const fieldsDiv = container.querySelector<HTMLElement>('.vtkc-fields')!;
-  let sliderPos = 0;
-
-  async function goTo(pos: number) {
-    sliderPos = Math.max(0, Math.min(pos, steps.length - 1));
-    label.textContent = `${sliderPos + 1}/${steps.length}`;
-    slider.value = String(sliderPos);
-    await render(sliderPos, currentFieldIdx);
-    if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, currentFieldIdx);
-  }
-
-  if (fieldsConfig.length > 1) {
-    fieldsDiv.style.display = 'flex';
-    fieldsConfig.forEach(({ index, name }) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.dataset.idx = String(index);
-      const active = index === fieldsConfig[0].index;
-      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
-      btn.addEventListener('click', async () => {
-        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
-        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
-        currentFieldIdx = index;
-        await render(sliderPos, index);
-        if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, index);
-      });
-      fieldsDiv.appendChild(btn);
-    });
-  }
-
-  // ── Slider de pas partagé ─────────────────────────────────────────────
+  // ── Contrôles (récupérés AVANT goTo pour éviter tout TDZ sur slider/label) ──
   const controls = container.querySelector<HTMLElement>('.vtkc-controls')!;
   const slider   = container.querySelector<HTMLInputElement>('.vtkc-slider')!;
   const label    = container.querySelector<HTMLElement>('.vtkc-label')!;
@@ -272,8 +240,47 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   let animTimer: ReturnType<typeof setInterval> | null = null;
   function stopAnim() { if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; } }
 
-  if (steps.length > 1 || fieldsConfig.length > 1) controls.style.display = 'flex';
-  if (steps.length > 1) {
+  const fieldsDiv = container.querySelector<HTMLElement>('.vtkc-fields')!;
+  let sliderPos = 0;
+
+  async function goTo(pos: number) {
+    sliderPos = Math.max(0, Math.min(pos, steps.length - 1));
+    const pos2 = sliderPos;                         // figé : sliderPos peut bouger pendant l'await
+    label.textContent = `${pos2 + 1}/${steps.length}`;
+    slider.value = String(pos2);
+    await render(pos2, currentFieldIdx);
+    if (hasText) textContent.innerHTML = resolveStepText(steps[pos2].text, currentFieldIdx);
+  }
+
+  // ── Sélecteur de champ partagé ────────────────────────────────────────
+  if (fieldsConfig.length > 1) {
+    fieldsDiv.style.display = 'flex';
+    fieldsConfig.forEach(({ index, name }) => {
+      const btn = document.createElement('button');
+      btn.textContent = name;
+      btn.dataset.idx = String(index);
+      const active = index === fieldsConfig[0].index;
+      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
+      btn.addEventListener('click', async () => {
+        stopAnim();
+        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
+        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
+        currentFieldIdx = index;
+        await render(sliderPos, index);
+        if (hasText) textContent.innerHTML = resolveStepText(steps[sliderPos].text, index);
+      });
+      fieldsDiv.appendChild(btn);
+    });
+  }
+
+  // ── Slider de pas partagé ─────────────────────────────────────────────
+  const hasSteps = steps.length > 1;
+  if (hasSteps || fieldsConfig.length > 1) controls.style.display = 'flex';
+  // Un seul pas : masquer les contrôles de transport (sinon boutons morts visibles)
+  if (!hasSteps) {
+    [firstBtn, prevBtn, playBtn, nextBtn, lastBtn, slider, label].forEach(el => { el.style.display = 'none'; });
+  }
+  if (hasSteps) {
     slider.max = String(steps.length - 1);
     const datalist = container.querySelector<HTMLDataListElement>('.vtkc-datalist')!;
     const listId = 'vtkc-dl-' + Math.random().toString(36).slice(2);
