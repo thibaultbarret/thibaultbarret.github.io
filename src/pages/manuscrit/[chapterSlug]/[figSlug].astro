@@ -69,13 +69,13 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
 
         <!-- Figure -->
         {isVtkCompare && (
-          <VtkFigureCompare src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+          <VtkFigureCompare src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
         {isVtk && (
-          <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+          <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
         {isVtk3D && (
-          <VtkFigure3D src={`/figures/manuscrit/${fig.filename}`} height="calc(100vh - 260px)" />
+          <VtkFigure3D src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
         {isJs && (
           <>
