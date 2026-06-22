@@ -1,0 +1,61 @@
+{
+    "cmap": "RdYlGn_r",
+    "n_colors": 10,
+    "opacity": 0.8,
+    "label_format": ".4f",
+    "fields_config": [
+        {
+            "index": 0,
+            "name": "ε_xx"
+        },
+        {
+            "index": 1,
+            "name": "ε_yy"
+        },
+        {
+            "index": 2,
+            "name": "ε_xy"
+        },
+        {
+            "index": 3,
+            "name": "ε_1"
+        },
+        {
+            "index": 4,
+            "name": "ε_2"
+        },
+        {
+            "index": 5,
+            "name": "ε_vm"
+        }
+    ],
+    "panels": [
+        {
+            "title": "CIN - SL(U_ef)",
+            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/coordonnees_subsets_px.npy",
+            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/subset_triangulation.npy",
+            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/difference_relative_absolue_deformations_cin_sl_u_ef.npy"
+        },
+        {
+            "title": "CIN - EF",
+            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/coordonnees_subsets_px.npy",
+            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/subset_triangulation.npy",
+            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/difference_relative_absolue_deformations_cin_ef.npy"
+        }
+    ],
+    "steps": [
+        {
+            "step": 0,
+            "text": "toot"
+        },
+        { "step": 1, "text": "toot" },
+        { "step": 2, "text": "toot" },
+        { "step": 3, "text": "toot" },
+        { "step": 4, "text": "toot" },
+        { "step": 5, "text": "toot" },
+        { "step": 6, "text": "toot" },
+        { "step": 7, "text": "toot" },
+        { "step": 8, "text": "toot" },
+        { "step": 9, "text": "toot" }
+    ]
+}

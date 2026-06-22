@@ -37,120 +37,120 @@
             "step": 0,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0023<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0002",
-                "1": "valeur maximale : 0.0005<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0007<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0001",
-                "4": "valeur maximale : 0.0091<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0006<br>écart-type : 0.0007",
-                "5": "valeur maximale : 0.0008<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0001"
+                "0": "valeur maximale : 0.2253<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0202<br>écart-type : 0.0168",
+                "1": "valeur maximale : 0.0528<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0057<br>écart-type : 0.0049",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0022<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0733<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0068<br>écart-type : 0.0061",
+                "4": "valeur maximale : 0.9118<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0598<br>écart-type : 0.0750",
+                "5": "valeur maximale : 0.0790<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0083<br>écart-type : 0.0072"
             }
         },
         {
             "step": 1,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0008<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0001",
-                "1": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0057<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0003<br>écart-type : 0.0004",
-                "5": "valeur maximale : 0.0005<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "0": "valeur maximale : 0.0823<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0102<br>écart-type : 0.0088",
+                "1": "valeur maximale : 0.0267<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0027<br>écart-type : 0.0023",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0001<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0350<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0030<br>écart-type : 0.0027",
+                "4": "valeur maximale : 0.5726<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0316<br>écart-type : 0.0374",
+                "5": "valeur maximale : 0.0500<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0039<br>écart-type : 0.0035"
             }
         },
         {
             "step": 2,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0014<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0001",
-                "1": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0040<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0003",
-                "5": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "0": "valeur maximale : 0.1444<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0071<br>écart-type : 0.0066",
+                "1": "valeur maximale : 0.0203<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0018<br>écart-type : 0.0016",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0001<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0249<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0020<br>écart-type : 0.0017",
+                "4": "valeur maximale : 0.4049<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0249<br>écart-type : 0.0313",
+                "5": "valeur maximale : 0.0340<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0028<br>écart-type : 0.0026"
             }
         },
         {
             "step": 3,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0016<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0001<br>écart-type : 0.0001",
-                "1": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0042<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0003",
-                "5": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "0": "valeur maximale : 0.1598<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0060<br>écart-type : 0.0058",
+                "1": "valeur maximale : 0.0177<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0013<br>écart-type : 0.0012",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0004<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0252<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0014<br>écart-type : 0.0013",
+                "4": "valeur maximale : 0.4216<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0226<br>écart-type : 0.0286",
+                "5": "valeur maximale : 0.0299<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0022<br>écart-type : 0.0022"
             }
         },
         {
             "step": 4,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0013<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0001",
-                "1": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0038<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0003",
-                "5": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "0": "valeur maximale : 0.1320<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0050<br>écart-type : 0.0053",
+                "1": "valeur maximale : 0.0174<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0010<br>écart-type : 0.0010",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0002<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0205<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0011<br>écart-type : 0.0010",
+                "4": "valeur maximale : 0.3816<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0205<br>écart-type : 0.0255",
+                "5": "valeur maximale : 0.0292<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0019<br>écart-type : 0.0020"
             }
         },
         {
             "step": 5,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0016<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0001",
-                "1": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
+                "0": "valeur maximale : 0.1570<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0045<br>écart-type : 0.0051",
+                "1": "valeur maximale : 0.0161<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0009<br>écart-type : 0.0009",
                 "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0040<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0003",
-                "5": "valeur maximale : 0.0003<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "3": "valeur maximale : 0.0167<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0009<br>écart-type : 0.0009",
+                "4": "valeur maximale : 0.3959<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0195<br>écart-type : 0.0251",
+                "5": "valeur maximale : 0.0301<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0017<br>écart-type : 0.0019"
             }
         },
         {
             "step": 6,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0014<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "1": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
+                "0": "valeur maximale : 0.1396<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0042<br>écart-type : 0.0047",
+                "1": "valeur maximale : 0.0123<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0008<br>écart-type : 0.0007",
                 "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0034<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0002",
-                "5": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "3": "valeur maximale : 0.0156<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0008<br>écart-type : 0.0008",
+                "4": "valeur maximale : 0.3385<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0190<br>écart-type : 0.0241",
+                "5": "valeur maximale : 0.0221<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0017<br>écart-type : 0.0018"
             }
         },
         {
             "step": 7,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0014<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "1": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0030<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0002",
-                "5": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "0": "valeur maximale : 0.1372<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0038<br>écart-type : 0.0044",
+                "1": "valeur maximale : 0.0088<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0006<br>écart-type : 0.0006",
+                "2": "valeur maximale : inf<br>valeur minimale : 0.0001<br>valeur moyenne : inf<br>écart-type : nan",
+                "3": "valeur maximale : 0.0156<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0007<br>écart-type : 0.0006",
+                "4": "valeur maximale : 0.3040<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0183<br>écart-type : 0.0224",
+                "5": "valeur maximale : 0.0210<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0015<br>écart-type : 0.0017"
             }
         },
         {
             "step": 8,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0012<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "1": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
+                "0": "valeur maximale : 0.1178<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0038<br>écart-type : 0.0043",
+                "1": "valeur maximale : 0.0098<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0006<br>écart-type : 0.0006",
                 "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0025<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0002",
-                "5": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "3": "valeur maximale : 0.0127<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0006<br>écart-type : 0.0006",
+                "4": "valeur maximale : 0.2514<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0183<br>écart-type : 0.0221",
+                "5": "valeur maximale : 0.0170<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0015<br>écart-type : 0.0016"
             }
         },
         {
             "step": 9,
             "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/traction/synthetic_image_homogeneous_tensile_step_0.png",
             "text": {
-                "0": "valeur maximale : 0.0011<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "1": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
+                "0": "valeur maximale : 0.1139<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0037<br>écart-type : 0.0044",
+                "1": "valeur maximale : 0.0090<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0005<br>écart-type : 0.0005",
                 "2": "valeur maximale : inf<br>valeur minimale : 0.0000<br>valeur moyenne : inf<br>écart-type : nan",
-                "3": "valeur maximale : 0.0001<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000",
-                "4": "valeur maximale : 0.0025<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0002<br>écart-type : 0.0002",
-                "5": "valeur maximale : 0.0002<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0000<br>écart-type : 0.0000"
+                "3": "valeur maximale : 0.0101<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0005<br>écart-type : 0.0006",
+                "4": "valeur maximale : 0.2516<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0179<br>écart-type : 0.0224",
+                "5": "valeur maximale : 0.0199<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0014<br>écart-type : 0.0017"
             }
         }
     ]
