@@ -115,7 +115,11 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
   renderTex(el.querySelector<HTMLElement>('.plot1d-ylabel-inner'), cfg.ylabel, true);
 
   const mount = el.querySelector<HTMLElement>('.plot1d-uplot')!;
-  const size = () => ({ width: mount.clientWidth, height: mount.clientHeight });
+  // La légende uPlot est rendue SOUS le canvas dans le même conteneur : on retire
+  // sa hauteur pour que canvas + légende tiennent dans la cellule (sinon la légende
+  // déborde sur l'axe x / le label x).
+  const legendH = () => mount.querySelector<HTMLElement>('.u-legend')?.offsetHeight ?? 0;
+  const size = () => ({ width: mount.clientWidth, height: Math.max(80, mount.clientHeight - legendH()) });
   const axisStroke = '#cdd6f4', gridStroke = '#313244', tickStroke = '#45475a';
   const opts: uPlot.Options = {
     ...size(),
@@ -146,6 +150,10 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
       if (cell) renderTex(cell, s.label, false);
     });
   }
+
+  // La légende (et son rendu KaTeX) existe maintenant : on redimensionne le canvas
+  // pour qu'elle tienne dans la cellule sans chevaucher l'axe x.
+  u.setSize(size());
 
   new ResizeObserver(() => u.setSize(size())).observe(mount);
   el.querySelector<HTMLElement>('.plot1d-loading')!.style.display = 'none';
