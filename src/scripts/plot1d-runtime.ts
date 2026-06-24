@@ -3,6 +3,8 @@
 // aligne les séries sur un axe x commun, et rend un graphique uPlot thémé Catppuccin.
 import uPlot from 'uplot';
 import { fetchNpy, type NpyArray } from './vtk-core';
+import katex from 'katex';
+import katexMacros from '../katex-macros.js';
 
 export interface CurveConfig {
   y: string;                 // path .npy (1D, ou 2D (N,K) avec `index`)
@@ -69,6 +71,21 @@ async function loadAxis(spec: string | number[] | undefined, index: number): Pro
   return extractColumn(npy, npy.shape.length >= 2 ? index : 0);
 }
 
+// Rend `src` (LaTeX) en HTML KaTeX dans `el`. Pour l'axe y, `el` est le span pivoté
+// et on masque/affiche sa cellule parente. Repli texte brut si KaTeX échoue.
+function renderTex(el: HTMLElement | null, src: string | undefined, isYAxis: boolean): void {
+  if (!el) return;
+  const cell = isYAxis ? (el.parentElement as HTMLElement | null) : el;
+  if (!cell) return;
+  if (!src) { cell.style.display = 'none'; return; }
+  cell.style.display = isYAxis ? 'block' : '';
+  try {
+    el.innerHTML = katex.renderToString(src, { macros: katexMacros as Record<string, string>, throwOnError: false });
+  } catch {
+    el.textContent = src;
+  }
+}
+
 export async function initPlot1D(el: HTMLElement): Promise<void> {
   const src = el.dataset.src!;
   const cfg = await fetch(src).then(r => {
@@ -92,19 +109,23 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
 
   const data = alignSeries(loaded.map(s => ({ x: s.x, y: s.y }))) as uPlot.AlignedData;
 
-  const host = el.querySelector<HTMLElement>('.plot1d-host')!;
-  const size = () => ({ width: host.clientWidth, height: host.clientHeight });
+  // Labels LaTeX rendus en HTML KaTeX (titre, axe x, axe y pivoté)
+  renderTex(el.querySelector<HTMLElement>('.plot1d-title'), cfg.title, false);
+  renderTex(el.querySelector<HTMLElement>('.plot1d-xlabel'), cfg.xlabel, false);
+  renderTex(el.querySelector<HTMLElement>('.plot1d-ylabel-inner'), cfg.ylabel, true);
+
+  const mount = el.querySelector<HTMLElement>('.plot1d-uplot')!;
+  const size = () => ({ width: mount.clientWidth, height: mount.clientHeight });
   const axisStroke = '#cdd6f4', gridStroke = '#313244', tickStroke = '#45475a';
   const opts: uPlot.Options = {
-    title: cfg.title,
     ...size(),
     scales: {
       x: { time: false, distr: (cfg.xlog ? 3 : 1) as 1 | 3 },
       y: { distr: (cfg.ylog ? 3 : 1) as 1 | 3 },
     },
     axes: [
-      { label: cfg.xlabel, stroke: axisStroke, grid: { stroke: gridStroke }, ticks: { stroke: tickStroke }, font: '11px monospace', labelFont: '12px monospace' },
-      { label: cfg.ylabel, stroke: axisStroke, grid: { stroke: gridStroke }, ticks: { stroke: tickStroke }, font: '11px monospace', labelFont: '12px monospace' },
+      { stroke: axisStroke, grid: { stroke: gridStroke }, ticks: { stroke: tickStroke }, font: '11px monospace' },
+      { stroke: axisStroke, grid: { stroke: gridStroke }, ticks: { stroke: tickStroke }, font: '11px monospace' },
     ],
     series: [
       {},
@@ -114,7 +135,18 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
     legend: { show: cfg.legend !== false },
   };
 
-  const u = new uPlot(opts, data, host);
-  new ResizeObserver(() => u.setSize(size())).observe(host);
+  const u = new uPlot(opts, data, mount);
+
+  // Légende : noms de séries en LaTeX (best-effort ; row 0 = axe x ; repli texte brut)
+  if (cfg.legend !== false) {
+    const rows = mount.querySelectorAll<HTMLElement>('.u-legend .u-series');
+    loaded.forEach((s, i) => {
+      const row = rows[i + 1];
+      const cell = row?.querySelector<HTMLElement>('.u-label') ?? (row?.lastElementChild as HTMLElement | null);
+      if (cell) renderTex(cell, s.label, false);
+    });
+  }
+
+  new ResizeObserver(() => u.setSize(size())).observe(mount);
   el.querySelector<HTMLElement>('.plot1d-loading')!.style.display = 'none';
 }
