@@ -1,4 +1,42 @@
 ---
+// FieldCurve — figure composite : champ 2D (type VtkFigure) + courbe 1D (type Plot1D)
+// côte à côte, pilotés par un slider commun, avec un marqueur mobile sur la courbe.
+// Détecté au build par la présence SIMULTANÉE de `curves` ET (`coords`|`triangles`).
+// La courbe est rendue par un <Plot1D> embarqué ; le marqueur est piloté par le slider.
+//
+// JSON schema :
+// {
+//   // ── CHAMP (obligatoires : coords, triangles, fields, steps) ──
+//   "coords":        "/data/coords.npy",            // (N,2) coordonnées des points
+//   "triangles":     "/data/tri.npy",               // (T,3) triangulation
+//   "fields":        "/data/eps.npy",               // (N,F,S) ou (N,F) champ(s) par pas
+//   "displacements": "/data/u.npy",                 // (N,2,S) ou (N,2) — optionnel
+//   "images":        "/data/images.npy",            // (H,W,S) uint8, fond image — optionnel
+//   "field_index": 0, "field_name": "eps_xx",       // champ unique
+//   "fields_config": [{ "index": 0, "name": "eps_xx" }], // OU plusieurs champs (boutons)
+//   "cmap": "RdYlGn_r",                             // colormap (défaut RdYlGn_r)
+//   "n_colors": 10,                                 // bandes de la colorbar (défaut 10)
+//   "opacity": 0.8,                                 // opacité du maillage (défaut 0.8)
+//   "label_format": ".2e",                          // format des valeurs (défaut .2e)
+//   "label_color": "#a6adc8",                       // couleur des labels de colorbar
+//   "vmin": 0, "vmax": 1,                           // échelle de couleur fixe — optionnel
+//   "steps": [{ "step": 0 }, { "step": 1 }],        // pilote le slider (+ "image"?/"image_index"?)
+//
+//   // ── COURBE (obligatoire : curves) ──
+//   "x": "/data/eps_glob.npy",                      // axe x PARTAGÉ (.npy ou tableau inline)
+//   "title": "\\sigma(\\varepsilon)",               // LaTeX (KaTeX + macros MMC)
+//   "xlabel": "\\varepsilon", "ylabel": "\\sigma\\ (\\mathrm{MPa})",
+//   "xlog": false, "ylog": false, "legend": true,   // optionnels
+//   "curves": [
+//     // y requis ; x? écrase l'axe racine ; index? = colonne si .npy 2D ; width?/dash?/color?
+//     { "label": "\\sigma", "y": "/data/sig.npy", "color": "#89b4fa", "width": 2 }
+//   ],
+//
+//   // ── MARQUEUR (point mobile sur la courbe, suit le slider) ──
+//   "marker_offset": 0,          // indice marqueur = pas + offset (défaut 0)
+//   "marker_color": "#f38ba8",   // couleur du point (défaut #f38ba8)
+//   "marker_size": 7             // rayon en px (défaut 7)
+// }
 import Plot1D from './Plot1D.astro';
 interface Props { src: string; height?: number | string; }
 const { src, height = 460 } = Astro.props;
