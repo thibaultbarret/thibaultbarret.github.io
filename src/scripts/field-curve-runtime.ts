@@ -20,9 +20,6 @@ import {
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
 } from './vtk-core';
 import type { NpyArray, RawData, ColorbarEls } from './vtk-core';
-import uPlot from 'uplot';
-import { extractColumn, alignSeries, loadAxis, renderTex, PALETTE } from './plot1d-runtime';
-import type { CurveConfig } from './plot1d-runtime';
 
 type FieldDef = { index: number; name: string };
 interface StepCfg { step: number; image?: string; image_index?: number }
@@ -292,83 +289,19 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
     tooltip.style.display = 'none';
   });
 
-  // ── COURBE 1D (uPlot + helpers plot1d) ──
-  const curvesCfg: CurveConfig[] = cfg.curves ?? [];
-  if (curvesCfg.length === 0) throw new Error('Aucune courbe : le champ `curves` est vide ou absent.');
+  // ── COURBE : pilotage du marqueur du <Plot1D> embarqué ─────────────────
+  // La courbe est rendue par le composant <Plot1D> (robuste). Il expose
+  // `__plot1d.setMarker(i)` une fois initialisé ; on attend cette API puis on
+  // branche le slider du champ dessus (marqueur à `pas + marker_offset`).
   const markerOffset = Number.isInteger(cfg.marker_offset) ? cfg.marker_offset : 0;
-  const markerColor: string = cfg.marker_color ?? '#f38ba8';
-
-  // Tableaux ORIGINAUX (x,y) par courbe — servent au marqueur (indice = pas+offset)
-  const loaded = await Promise.all(curvesCfg.map(async (c, i) => {
-    const label = c.label ?? `Série ${i + 1}`;
-    const index = c.index ?? 0;
-    const yNpy = await fetchNpy(c.y);
-    const y = extractColumn(yNpy, yNpy.shape.length >= 2 ? index : 0);
-    const x = await loadAxis(c.x ?? cfg.x, index);
-    if (x == null) throw new Error(`Courbe « ${label} » : aucun axe x (ni propre, ni racine).`);
-    if (x.length !== y.length) throw new Error(`Courbe « ${label} » : x (${x.length}) et y (${y.length}) de longueurs différentes.`);
-    return { x, y, label, color: c.color ?? PALETTE[i % PALETTE.length], width: c.width ?? 2, dash: c.dash };
-  }));
-
-  const cData = alignSeries(loaded.map(s => ({ x: s.x, y: s.y }))) as uPlot.AlignedData;
-
-  renderTex(el.querySelector<HTMLElement>('.fc-c-title'), cfg.title, false);
-  renderTex(el.querySelector<HTMLElement>('.fc-c-xlabel'), cfg.xlabel, false);
-  renderTex(el.querySelector<HTMLElement>('.fc-c-ylabel-inner'), cfg.ylabel, true);
-
-  const cMount = el.querySelector<HTMLElement>('.fc-c-uplot')!;
-  const legendH = () => cMount.querySelector<HTMLElement>('.u-legend')?.offsetHeight ?? 0;
-  const cSize = () => ({ width: cMount.clientWidth, height: Math.max(80, cMount.clientHeight - legendH()) });
-
-  // Indice du marqueur (mis à jour par onStep) ; clamp + warn si hors borne
-  let markerIdx = 0;
-  function setMarker(stepPos: number) {
-    const raw = stepPos + markerOffset;
-    markerIdx = raw;
-    if (loaded.some(s => raw < 0 || raw >= s.x.length))
-      console.warn(`[fieldcurve] marqueur ${raw} hors borne pour au moins une courbe (clampé au rendu).`);
+  const plotEl = el.querySelector<HTMLElement>('.plot1d-figure');
+  if (plotEl) {
+    const wire = () => {
+      const api = (plotEl as any).__plot1d as { setMarker(i: number): void } | undefined;
+      if (!api) { requestAnimationFrame(wire); return; }
+      onStep = (pos: number) => api.setMarker(pos + markerOffset);
+      api.setMarker(sliderPos + markerOffset); // sync sur le pas courant
+    };
+    wire();
   }
-
-  const uOpts: uPlot.Options = {
-    ...cSize(),
-    scales: { x: { time: false, distr: (cfg.xlog ? 3 : 1) as 1 | 3 }, y: { distr: (cfg.ylog ? 3 : 1) as 1 | 3 } },
-    axes: [
-      { stroke: '#cdd6f4', grid: { stroke: '#313244' }, ticks: { stroke: '#45475a' }, font: '11px monospace' },
-      { stroke: '#cdd6f4', grid: { stroke: '#313244' }, ticks: { stroke: '#45475a' }, font: '11px monospace' },
-    ],
-    series: [ {}, ...loaded.map(s => ({ label: s.label, stroke: s.color, width: s.width, dash: s.dash, spanGaps: true, points: { show: false } })) ],
-    cursor: { drag: { x: true, y: false } },
-    legend: { show: cfg.legend !== false },
-    hooks: {
-      draw: [ (u: any) => {
-        const ctx = u.ctx; ctx.save();
-        for (const s of loaded) {
-          const k = Math.max(0, Math.min(markerIdx, s.x.length - 1));
-          const xv = s.x[k], yv = s.y[k];
-          if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
-          const cx = u.valToPos(xv, 'x', true), cy = u.valToPos(yv, 'y', true);
-          ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = markerColor; ctx.strokeStyle = '#1e1e2e'; ctx.lineWidth = 2;
-          ctx.fill(); ctx.stroke();
-        }
-        ctx.restore();
-      } ],
-    },
-  };
-  const u = new uPlot(uOpts, cData, cMount);
-  if (cfg.legend !== false) {
-    const rows = cMount.querySelectorAll<HTMLElement>('.u-legend .u-series');
-    loaded.forEach((s, i) => {
-      const row = rows[i + 1];
-      const cell = row?.querySelector<HTMLElement>('.u-label') ?? (row?.lastElementChild as HTMLElement | null);
-      if (cell) renderTex(cell, s.label, false);
-    });
-  }
-  u.setSize(cSize());
-  new ResizeObserver(() => u.setSize(cSize())).observe(cMount);
-
-  // Brancher le marqueur sur le slider partagé : à chaque pas, recalcul + redraw
-  onStep = (pos: number) => { setMarker(pos); u.redraw(); };
-  setMarker(sliderPos);   // aligne le marqueur sur le pas initial déjà rendu
-  u.redraw();
 }

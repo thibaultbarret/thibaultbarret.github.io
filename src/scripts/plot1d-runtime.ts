@@ -121,6 +121,11 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
   const legendH = () => mount.querySelector<HTMLElement>('.u-legend')?.offsetHeight ?? 0;
   const size = () => ({ width: mount.clientWidth, height: Math.max(80, mount.clientHeight - legendH()) });
   const axisStroke = '#cdd6f4', gridStroke = '#313244', tickStroke = '#45475a';
+  // Marqueur optionnel piloté de l'extérieur (FieldCurve) via `__plot1d.setMarker`.
+  // Caché par défaut (markerIdx < 0) → le Plot1D autonome est inchangé.
+  let markerIdx = -1;
+  const markerColor: string = (cfg as any).marker_color ?? '#f38ba8';
+  const markerSize: number = (cfg as any).marker_size ?? 7;
   const opts: uPlot.Options = {
     ...size(),
     scales: {
@@ -137,9 +142,27 @@ export async function initPlot1D(el: HTMLElement): Promise<void> {
     ],
     cursor: { drag: { x: true, y: false } },
     legend: { show: cfg.legend !== false },
+    hooks: {
+      draw: [ (u: any) => {
+        if (markerIdx < 0) return;
+        const ctx = u.ctx; ctx.save();
+        for (const s of loaded) {
+          const k = Math.max(0, Math.min(markerIdx, s.x.length - 1));
+          const xv = s.x[k], yv = s.y[k];
+          if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
+          const cx = u.valToPos(xv, 'x', true), cy = u.valToPos(yv, 'y', true);
+          ctx.beginPath(); ctx.arc(cx, cy, markerSize, 0, 2 * Math.PI);
+          ctx.fillStyle = markerColor; ctx.strokeStyle = '#1e1e2e'; ctx.lineWidth = 2;
+          ctx.fill(); ctx.stroke();
+        }
+        ctx.restore();
+      } ],
+    },
   };
 
   const u = new uPlot(opts, data, mount);
+  // API externe : FieldCurve pilote le marqueur de la courbe via cette poignée.
+  (el as any).__plot1d = { setMarker(i: number) { markerIdx = i; u.redraw(); } };
 
   // Légende : noms de séries en LaTeX (best-effort ; row 0 = axe x ; repli texte brut)
   if (cfg.legend !== false) {
