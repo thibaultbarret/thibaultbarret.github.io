@@ -7,6 +7,7 @@ import VtkFigure from '../../../components/VtkFigure.astro';
 import VtkFigure3D from '../../../components/VtkFigure3D.astro';
 import VtkFigureCompare from '../../../components/VtkFigureCompare.astro';
 import Plot1D from '../../../components/Plot1D.astro';
+import FieldCurve from '../../../components/FieldCurve.astro';
 import '../../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -28,6 +29,7 @@ const figId = `fig-${figIndex}`;
 
 // Détecte le type de figure VTK d'après les clés du JSON (lu au build).
 let isVtkCompare = false;
+let isFieldCurve = false;
 let isPlot1D = false;
 let isVtk3D = false;
 let isVtk   = false;
@@ -36,9 +38,10 @@ if (ext === 'json') {
     const jsonPath = path.join(process.cwd(), 'public', 'figures', 'manuscrit', fig.filename);
     const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     isVtkCompare = Array.isArray(json.panels);
-    isPlot1D     = !isVtkCompare && Array.isArray(json.curves);
-    isVtk3D      = !isVtkCompare && !isPlot1D && !!(json.dic || json.fe);
-    isVtk        = !isVtkCompare && !isPlot1D && !isVtk3D;
+    isFieldCurve = !isVtkCompare && Array.isArray(json.curves) && !!(json.coords || json.triangles);
+    isPlot1D     = !isVtkCompare && !isFieldCurve && Array.isArray(json.curves);
+    isVtk3D      = !isVtkCompare && !isFieldCurve && !isPlot1D && !!(json.dic || json.fe);
+    isVtk        = !isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk3D;
   } catch {
     isVtk = true;
   }
@@ -77,6 +80,9 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
         {isPlot1D && (
           <Plot1D src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
+        {isFieldCurve && (
+          <FieldCurve src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
+        )}
         {isVtk && (
           <VtkFigure src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
@@ -93,7 +99,7 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
             <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
           </>
         )}
-        {!isVtkCompare && !isPlot1D && !isVtk && !isVtk3D && !isJs && (
+        {!isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk && !isVtk3D && !isJs && (
           <iframe
             src={`/figures/manuscrit/${fig.filename}`}
             width="100%"

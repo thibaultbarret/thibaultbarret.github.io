@@ -27,7 +27,7 @@ export interface Plot1DConfig {
 }
 
 // Palette Catppuccin Mocha (cyclée si `color` absent)
-const PALETTE = ['#89b4fa', '#fab387', '#a6e3a1', '#f38ba8', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'];
+export const PALETTE = ['#89b4fa', '#fab387', '#a6e3a1', '#f38ba8', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'];
 
 const toNull = (v: number): number | null => (Number.isFinite(v) ? v : null);
 
@@ -64,7 +64,7 @@ export function alignSeries(series: { x: number[]; y: number[] }[]): (number | n
   return out;
 }
 
-async function loadAxis(spec: string | number[] | undefined, index: number): Promise<number[] | null> {
+export async function loadAxis(spec: string | number[] | undefined, index: number): Promise<number[] | null> {
   if (spec == null) return null;
   if (Array.isArray(spec)) return spec.map(Number);
   const npy = await fetchNpy(spec);
@@ -73,7 +73,7 @@ async function loadAxis(spec: string | number[] | undefined, index: number): Pro
 
 // Rend `src` (LaTeX) en HTML KaTeX dans `el`. Pour l'axe y, `el` est le span pivoté
 // et on masque/affiche sa cellule parente. Repli texte brut si KaTeX échoue.
-function renderTex(el: HTMLElement | null, src: string | undefined, isYAxis: boolean): void {
+export function renderTex(el: HTMLElement | null, src: string | undefined, isYAxis: boolean): void {
   if (!el) return;
   const cell = isYAxis ? (el.parentElement as HTMLElement | null) : el;
   if (!cell) return;
