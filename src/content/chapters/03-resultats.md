@@ -47,6 +47,11 @@ Le champ de déformation calculé par MatchID à partir des images synthétiques
 
 ### Cisaillement homogène
 
+<!-- figure: 3 -->
+<!-- figure: 4 -->
+
 #### Résultats de la DIC
 
 ## Éprouvette entaillée
+
+<!-- figure: 5 -->

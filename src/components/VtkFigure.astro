@@ -225,7 +225,7 @@ async function toTexture(src: string) {
   const sc = vtkDataArray.newInstance({ name:'px', values: new Uint8Array(px.data), numberOfComponents:4 });
   const vi = vtkImageData.newInstance();
   vi.setDimensions(img.width, img.height, 1); vi.setSpacing(1,1,1); vi.getPointData().setScalars(sc);
-  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(true);
+  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(false);
   return { tex, w: img.width, h: img.height };
 }
 
@@ -249,7 +249,7 @@ function frameToTexture(images: NpyArray, frame: number) {
   const sc = vtkDataArray.newInstance({ name: 'px', values: rgba, numberOfComponents: 4 });
   const vi = vtkImageData.newInstance();
   vi.setDimensions(W, H, 1); vi.setSpacing(1, 1, 1); vi.getPointData().setScalars(sc);
-  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(true);
+  const tex = vtkTexture.newInstance(); tex.setInputData(vi); tex.setInterpolate(false);
   return { tex, w: W, h: H };
 }
 
