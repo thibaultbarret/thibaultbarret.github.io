@@ -61,7 +61,8 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
   const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8,
-          label_format = '.2e', label_color = '#a6adc8' } = cfg;
+          label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  const log = scale === 'log';
   const hasFixedRange = typeof cfg.vmin === 'number' && typeof cfg.vmax === 'number';
   const steps: StepCfg[] = cfg.steps ?? [{ step: 0 }];
   const panelsCfg: PanelCfg[] = cfg.panels ?? [];
@@ -171,6 +172,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     canvas: container.querySelector<HTMLCanvasElement>('.vtkc-cb-canvas')!,
     labels: container.querySelector<HTMLElement>('.vtkc-cb-labels')!,
   };
+  const logErrEl = container.querySelector<HTMLElement>('.vtkc-log-error')!;
 
   // ── Rendu partagé ─────────────────────────────────────────────────────
   let currentStep = -1;
@@ -229,14 +231,24 @@ export async function initCompare(container: HTMLElement): Promise<void> {
       if (a < vmin) vmin = a;
       if (b > vmax) vmax = b;
     }
+    const dataMin = vmin; // min non-NaN de l'union AVANT substitution de plage forcée
+    if (log && !(dataMin > 0)) {
+      const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+      logErrEl.textContent =
+        `⚠ Échelle logarithmique impossible : le champ « ${fieldName} » contient des valeurs ≤ 0 (min = ${formatValue(dataMin, label_format)}).`;
+      logErrEl.style.display = 'flex';
+      currentStep = st.step;
+      return;
+    }
+    logErrEl.style.display = 'none';
     if (hasFixedRange) { vmin = cfg.vmin; vmax = cfg.vmax; }
     if (!isFinite(vmin) || !isFinite(vmax)) { vmin = 0; vmax = 1; }
     currentStep = st.step;
 
     // 2) LUT + colorbar (une fois)
-    configureLut(lut, cmapStops, n_colors, vmin, vmax);
+    configureLut(lut, cmapStops, n_colors, vmin, vmax, log);
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-    drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
+    drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
 
     // 3) Appliquer scalaires + range + texte à chaque panneau, puis rendre
     panels.forEach((p, k) => {

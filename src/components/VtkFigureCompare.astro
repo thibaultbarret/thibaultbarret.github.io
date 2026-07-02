@@ -28,6 +28,9 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Rangée de panneaux (remplie dynamiquement par le script) -->
     <div class="vtkc-panels" style="flex:1; display:flex; gap:6px; padding:6px; overflow:hidden;"></div>
 
+    <!-- Overlay d'erreur (échelle log impossible : valeurs <= 0) -->
+    <div class="vtkc-log-error" style="display:none;position:absolute;inset:0;z-index:15;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
+
     <!-- Boutons globaux (bas-gauche, sur les panneaux) -->
     <button class="vtkc-link"  title="Lier / délier les caméras" style="display:none;position:absolute;bottom:10px;left:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:12;">🔗</button>
     <button class="vtkc-reset" title="Réinitialiser la vue"      style="display:none;position:absolute;bottom:10px;left:46px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:12;">⟳</button>
