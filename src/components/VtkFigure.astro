@@ -51,6 +51,9 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
       <span style="color:#a6adc8;font:12px monospace;">Chargement…</span>
     </div>
 
+    <!-- Overlay d'erreur : échelle log impossible (valeurs ≤ 0) -->
+    <div class="vtk-log-error" style="display:none;position:absolute;inset:0;z-index:25;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
+
     <!-- Sélecteur de champ (plusieurs champs) -->
     <div class="vtk-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
 
@@ -103,6 +106,7 @@ import vtkInteractorStyleManipulator    from '@kitware/vtk.js/Interaction/Style/
 import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
 import vtkMouseCameraTrackballPanManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
 import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
+import { levelValue } from '../scripts/scale';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -278,7 +282,7 @@ function stepHasText(t: StepText | undefined): boolean {
 }
 
 // ── Colorbar ──────────────────────────────────────────────────────────────
-function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string) {
+function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string, log: boolean) {
   const title  = container.querySelector<HTMLElement>('.vtk-cb-title')!;
   const canvas = container.querySelector<HTMLCanvasElement>('.vtk-cb-canvas')!;
   const labels = container.querySelector<HTMLElement>('.vtk-cb-labels')!;
@@ -294,7 +298,7 @@ function drawColorbar(container: HTMLElement, name: string, stops: [number,numbe
     ctx.fillRect(0, Math.floor(i * bandH), 20, Math.ceil(bandH) + 1);
   }
   for (let i = 0; i <= nColors; i++) {
-    const v = vmin + (vmax - vmin) * (1 - i / nColors);
+    const v = levelValue(vmin, vmax, 1 - i / nColors, log);
     const s = document.createElement('span');
     s.style.cssText = `position:absolute;top:${i * 300 / nColors}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
     s.textContent = formatValue(v, labelFmt);
@@ -311,7 +315,8 @@ async function initVtk(container: HTMLElement) {
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
 
-  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8' } = cfg;
+  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  const log = scale === 'log';
   const steps: { step: number; image?: string; image_index?: number; text?: StepText }[] = cfg.steps ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
 
@@ -328,6 +333,9 @@ async function initVtk(container: HTMLElement) {
   const textContent = container.querySelector<HTMLElement>('.vtk-text-content')!;
   const hasText = steps.some(s => stepHasText(s.text));
   if (hasText) textPanel.style.display = 'block';
+
+  // ── Overlay d'erreur échelle log ──────────────────────────────────────────
+  const logErrEl = container.querySelector<HTMLElement>('.vtk-log-error')!;
 
   // ── Renderer ─────────────────────────────────────────────────────────────
   const canvasEl = container.querySelector<HTMLElement>('.vtk-canvas')!;
@@ -357,8 +365,8 @@ async function initVtk(container: HTMLElement) {
       // Échantillonnage extrémités incluses : bande 0 → couleur min, bande n-1 → couleur max (rouge pur Abaqus)
       const t = n_colors > 1 ? i / (n_colors - 1) : 0.5;
       const [, r, g, b] = interpolateCmap(cmapStops, t);
-      const v_lo = vmin + (i / n_colors) * range;
-      const v_hi = vmin + ((i + 1) / n_colors) * range;
+      const v_lo = levelValue(vmin, vmax, i / n_colors, log);
+      const v_hi = levelValue(vmin, vmax, (i + 1) / n_colors, log);
       lut.addRGBPoint(v_lo, r, g, b);
       // Borne supérieure de CHAQUE bande, y compris la dernière : sans ce nœud,
       // la bande haute n'a qu'un seul point → vtk.js remplit (v_lo, vmax) avec la
@@ -465,6 +473,15 @@ async function initVtk(container: HTMLElement) {
     // Scalaires + range par pas
     const newScalars = buildScalars(raw, step, fieldIdx);
     const [vmin, vmax] = fieldRange(newScalars);
+    const fieldName0 = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+    if (log && !(vmin > 0)) {
+      logErrEl.textContent =
+        `⚠ Échelle logarithmique impossible : le champ « ${fieldName0} » contient des valeurs ≤ 0 (min = ${formatValue(vmin, label_format)}).`;
+      logErrEl.style.display = 'flex';
+      currentFieldIdx = fieldIdx;
+      return;
+    }
+    logErrEl.style.display = 'none';
     for (let i = 0; i < newScalars.length; i++) {
       if (!isFinite(newScalars[i])) newScalars[i] = vmin;
     }
@@ -475,8 +492,7 @@ async function initVtk(container: HTMLElement) {
     // LUT et colorbar mis à jour à chaque pas
     configureLut(vmin, vmax);
     meshMapper.setScalarRange(vmin, vmax);
-    const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-    drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
+    drawColorbar(container, fieldName0, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
     currentFieldIdx = fieldIdx;
 
     // Texte associé au pas
