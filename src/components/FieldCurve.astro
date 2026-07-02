@@ -58,6 +58,7 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
         <div    class="fc-cb-labels" style="position:absolute;right:68px;top:50%;transform:translateY(-130px);height:260px;pointer-events:none;z-index:10;"></div>
         <button class="fc-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
         <div class="fc-canvas" style="position:absolute;inset:0;overflow:hidden;"></div>
+        <div class="fc-log-error" style="display:none;position:absolute;inset:0;z-index:15;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
         <div class="fc-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
       </div>
       <!-- Zone courbe : conteneur relatif (taille via flex, comme .fc-field) +

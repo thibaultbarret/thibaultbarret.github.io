@@ -33,13 +33,15 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
   const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8,
-          label_format = '.2e', label_color = '#a6adc8' } = cfg;
+          label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  const log = scale === 'log';
   const hasFixedRange = typeof cfg.vmin === 'number' && typeof cfg.vmax === 'number';
   const steps: StepCfg[] = cfg.steps ?? [{ step: 0 }];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
 
   // ── CHAMP (un panneau, adapté de vtk-compare-runtime.ts single-panel) ──
   const canvasEl = el.querySelector<HTMLElement>('.fc-canvas')!;
+  const logErrEl = el.querySelector<HTMLElement>('.fc-log-error')!;
 
   // Charger les .npy (adapté de vtk-compare-runtime.ts l.107-112)
   const [coordsArr, triArr, fieldsArr, dispArr, imagesArr] = await Promise.all([
@@ -159,13 +161,22 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
     }
     const sc = buildScalars(raw, st.step, fieldIdx);
     let [vmin, vmax] = fieldRange(sc);
+    const dataMin = vmin; // min non-NaN AVANT substitution de plage forcée
+    if (log && !(dataMin > 0)) {
+      const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+      logErrEl.textContent =
+        `⚠ Échelle logarithmique impossible : le champ « ${fieldName} » contient des valeurs ≤ 0 (min = ${formatValue(dataMin, label_format)}).`;
+      logErrEl.style.display = 'flex';
+      return;
+    }
+    logErrEl.style.display = 'none';
     if (hasFixedRange) { vmin = cfg.vmin; vmax = cfg.vmax; }
     if (!isFinite(vmin) || !isFinite(vmax)) { vmin = 0; vmax = 1; }
     currentStep = st.step;
 
-    configureLut(lut, cmapStops, n_colors, vmin, vmax);
+    configureLut(lut, cmapStops, n_colors, vmin, vmax, log);
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-    drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
+    drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
 
     for (let i = 0; i < sc.length; i++) if (!isFinite(sc[i])) sc[i] = vmin;
     scalarsArr.setData(sc);
