@@ -15,6 +15,8 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
       <span style="color:#a6adc8;font:12px monospace;">Chargement…</span>
     </div>
 
+    <div class="vtk3d-log-error" style="display:none;position:absolute;inset:0;z-index:25;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
+
     <!-- Sélecteur de champ (mode maillage unique, plusieurs champs) -->
     <div class="vtk3d-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
 
@@ -68,6 +70,7 @@ import vtkPoints                        from '@kitware/vtk.js/Common/Core/Points
 import vtkCellArray                     from '@kitware/vtk.js/Common/Core/CellArray';
 import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style/InteractorStyleTrackballCamera';
 import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
+import { levelValue } from '../scripts/scale';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -144,7 +147,7 @@ function stepHasText(t: StepText | undefined): boolean {
   return typeof t === 'string' ? t.length > 0 : Object.keys(t).length > 0;
 }
 
-function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string) {
+function drawColorbar(container: HTMLElement, name: string, stops: [number,number,number,number][], vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string, log: boolean) {
   const title  = container.querySelector<HTMLElement>('.vtk3d-cb-title')!;
   const canvas = container.querySelector<HTMLCanvasElement>('.vtk3d-cb-canvas')!;
   const labels = container.querySelector<HTMLElement>('.vtk3d-cb-labels')!;
@@ -159,7 +162,7 @@ function drawColorbar(container: HTMLElement, name: string, stops: [number,numbe
     ctx.fillRect(0, Math.floor(i * bandH), 20, Math.ceil(bandH) + 1);
   }
   for (let i = 0; i <= nColors; i++) {
-    const v = vmin + (vmax - vmin) * (1 - i / nColors);
+    const v = levelValue(vmin, vmax, 1 - i / nColors, log);
     const s = document.createElement('span');
     s.style.cssText = `position:absolute;top:${i * 300 / nColors}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
     s.textContent = formatValue(v, labelFmt);
@@ -238,7 +241,8 @@ async function initVtk3D(container: HTMLElement) {
   const hasFe    = !!cfg.fe;
   const dualMode = hasDic && hasFe;
 
-  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8' } = cfg;
+  const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  const log = scale === 'log';
   const steps: { step: number; text?: StepText }[] = cfg.steps ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
 
@@ -263,6 +267,9 @@ async function initVtk3D(container: HTMLElement) {
     }))() : Promise.resolve(null as FeMesh | null),
     (!dualMode && cfg.fields) ? fetchNpy(cfg.fields) : Promise.resolve(null as NpyArray | null),
   ]);
+
+  // ── Overlay d'erreur échelle log ───────────────────────────────────────
+  const logErrEl = container.querySelector<HTMLElement>('.vtk3d-log-error')!;
 
   // ── Renderer ─────────────────────────────────────────────────────────
   const canvasEl = container.querySelector<HTMLElement>('.vtk3d-canvas')!;
@@ -296,8 +303,8 @@ async function initVtk3D(container: HTMLElement) {
       // Échantillonnage extrémités incluses : bande 0 → couleur min, bande n-1 → couleur max (rouge pur Abaqus)
       const t    = n_colors > 1 ? i / (n_colors - 1) : 0.5;
       const [, r, g, b] = interpolateCmap(cmapStops, t);
-      const v_lo = vmin + (i / n_colors) * range;
-      const v_hi = vmin + ((i + 1) / n_colors) * range;
+      const v_lo = levelValue(vmin, vmax, i / n_colors, log);
+      const v_hi = levelValue(vmin, vmax, (i + 1) / n_colors, log);
       lut.addRGBPoint(v_lo, r, g, b);
       // Borne supérieure de CHAQUE bande, y compris la dernière : sans ce nœud,
       // la bande haute n'a qu'un seul point → vtk.js remplit (v_lo, vmax) avec la
@@ -415,6 +422,14 @@ async function initVtk3D(container: HTMLElement) {
     if (hasSca && fieldsArr && activePd.scalarsArr) {
       const newScalars = buildScalars(fieldsArr, stepIdx, fieldIdx);
       const [vmin, vmax] = fieldRange(newScalars);
+      const fieldName0 = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
+      if (log && !(vmin > 0)) {
+        logErrEl.textContent =
+          `⚠ Échelle logarithmique impossible : le champ « ${fieldName0} » contient des valeurs ≤ 0 (min = ${formatValue(vmin, label_format)}).`;
+        logErrEl.style.display = 'flex';
+        return;
+      }
+      logErrEl.style.display = 'none';
       if (!isFinite(vmin) || !isFinite(vmax)) { renWin.render(); return; }
       for (let i = 0; i < newScalars.length; i++) {
         if (!isFinite(newScalars[i])) newScalars[i] = vmin;
@@ -424,8 +439,7 @@ async function initVtk3D(container: HTMLElement) {
       activePd.pd.modified();
       configureLut(vmin, vmax);
       activeMapper.setScalarRange(vmin, vmax);
-      const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-      drawColorbar(container, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color);
+      drawColorbar(container, fieldName0, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
       currentFieldIdx = fieldIdx;
     }
 
