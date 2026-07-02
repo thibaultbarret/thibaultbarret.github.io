@@ -6,6 +6,8 @@ import vtkTexture   from '@kitware/vtk.js/Rendering/Core/Texture';
 import vtkImageData from '@kitware/vtk.js/Common/DataModel/ImageData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
 import type vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
+import { levelValue } from './scale';
+export { levelValue } from './scale';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 export const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -181,6 +183,7 @@ export function configureLut(
   nColors: number,
   vmin: number,
   vmax: number,
+  log = false,
 ) {
   lut.removeAllPoints();
   const range = (vmax - vmin) || 1;
@@ -188,8 +191,8 @@ export function configureLut(
   for (let i = 0; i < nColors; i++) {
     const t = nColors > 1 ? i / (nColors - 1) : 0.5;
     const [r, g, b] = interpolateCmap(stops, t);
-    const v_lo = vmin + (i / nColors) * range;
-    const v_hi = vmin + ((i + 1) / nColors) * range;
+    const v_lo = levelValue(vmin, vmax, i / nColors, log);
+    const v_hi = levelValue(vmin, vmax, (i + 1) / nColors, log);
     lut.addRGBPoint(v_lo, r, g, b);
     lut.addRGBPoint(i < nColors - 1 ? v_hi - eps : v_hi, r, g, b);
   }
@@ -202,6 +205,7 @@ export interface ColorbarEls { title: HTMLElement; canvas: HTMLCanvasElement; la
 export function drawColorbar(
   els: ColorbarEls, name: string, stops: [number,number,number,number][],
   vmin: number, vmax: number, nColors: number, labelFmt: string, labelColor: string,
+  log = false,
 ) {
   const { title, canvas, labels } = els;
   const Hpx = canvas.height;
@@ -216,7 +220,7 @@ export function drawColorbar(
     ctx.fillRect(0, Math.floor(i * bandH), canvas.width, Math.ceil(bandH) + 1);
   }
   for (let i = 0; i <= nColors; i++) {
-    const v = vmin + (vmax - vmin) * (1 - i / nColors);
+    const v = levelValue(vmin, vmax, 1 - i / nColors, log);
     const s = document.createElement('span');
     s.style.cssText = `position:absolute;top:${i * Hpx / nColors}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
     s.textContent = formatValue(v, labelFmt);
