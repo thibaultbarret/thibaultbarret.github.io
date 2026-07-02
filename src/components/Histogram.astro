@@ -1,0 +1,66 @@
+---
+// Figure histogramme interactive (uPlot). Config JSON via `src`, schéma :
+//   { histogram:true, data, fields_config:[{index,name}], scale?, bins?,
+//     x_label?, y_label?, bar_color? }
+interface Props { src: string; height?: number | string; }
+const { src, height = 420 } = Astro.props;
+const heightCss = typeof height === 'string' ? height : `${height}px`;
+---
+
+<div
+  class="hist-figure"
+  data-src={src}
+  style={`height:${heightCss}; position:relative; background:#1e1e2e; border-radius:0.25rem; overflow:hidden;`}
+>
+  <div class="hist-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;">
+    <span style="color:#a6adc8;font:12px monospace;">Chargement…</span>
+  </div>
+
+  <div class="hist-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:16;"></div>
+
+  <div class="hist-error" style="display:none;position:absolute;inset:0;z-index:15;pointer-events:none;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
+
+  <div class="hist-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:14;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;text-align:center;"></div>
+
+  <div class="hist-host" style="position:absolute;inset:8px 8px 44px 8px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;gap:4px;box-sizing:border-box;">
+    <div class="hist-ylabel" style="grid-column:1;grid-row:1;display:none;position:relative;width:1.7em;color:#cdd6f4;">
+      <span class="hist-ylabel-inner" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg);white-space:nowrap;"></span>
+    </div>
+    <div class="hist-uplot"  style="grid-column:2;grid-row:1;position:relative;min-width:0;min-height:0;"></div>
+    <div class="hist-xlabel" style="grid-column:2;grid-row:2;display:none;text-align:center;color:#cdd6f4;"></div>
+  </div>
+
+  <div class="hist-controls" style="display:none;position:absolute;left:8px;right:8px;bottom:10px;align-items:center;gap:8px;z-index:16;">
+    <input class="hist-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
+    <datalist class="hist-datalist"></datalist>
+  </div>
+</div>
+
+<script>
+import 'uplot/dist/uPlot.min.css';
+import 'katex/dist/katex.min.css';
+import { initHistogram } from '../scripts/histogram-runtime';
+
+function setup() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(({ isIntersecting, target }) => {
+      if (!isIntersecting) return;
+      (target as HTMLElement).dataset.ready = '1';
+      obs.unobserve(target);
+      initHistogram(target as HTMLElement).catch(e => {
+        const div = (target as HTMLElement).querySelector<HTMLElement>('.hist-loading')!;
+        const msg = e instanceof Error ? e.message : String(e);
+        div.style.display = 'flex';
+        div.innerHTML = `<span style="color:#f38ba8;font:11px monospace;padding:16px;text-align:center;max-width:80%;">Erreur histogramme : ${msg}</span>`;
+      });
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll<HTMLElement>('.hist-figure:not([data-ready])').forEach(el => obs.observe(el));
+}
+document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
+</script>
+
+<style is:global>
+  .hist-figure .uplot,
+  .hist-figure .u-wrap { background: transparent; }
+</style>
