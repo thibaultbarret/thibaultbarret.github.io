@@ -8,6 +8,7 @@ import VtkFigure3D from '../../../components/VtkFigure3D.astro';
 import VtkFigureCompare from '../../../components/VtkFigureCompare.astro';
 import Plot1D from '../../../components/Plot1D.astro';
 import FieldCurve from '../../../components/FieldCurve.astro';
+import Histogram from '../../../components/Histogram.astro';
 import '../../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -28,6 +29,7 @@ const isJs  = ext === 'js';
 const figId = `fig-${figIndex}`;
 
 // Détecte le type de figure VTK d'après les clés du JSON (lu au build).
+let isHistogram = false;
 let isVtkCompare = false;
 let isFieldCurve = false;
 let isPlot1D = false;
@@ -37,11 +39,12 @@ if (ext === 'json') {
   try {
     const jsonPath = path.join(process.cwd(), 'public', 'figures', 'manuscrit', fig.filename);
     const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-    isVtkCompare = Array.isArray(json.panels);
-    isFieldCurve = !isVtkCompare && Array.isArray(json.curves) && !!(json.coords || json.triangles);
-    isPlot1D     = !isVtkCompare && !isFieldCurve && Array.isArray(json.curves);
-    isVtk3D      = !isVtkCompare && !isFieldCurve && !isPlot1D && !!(json.dic || json.fe);
-    isVtk        = !isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk3D;
+    isHistogram  = json.histogram === true;
+    isVtkCompare = !isHistogram && Array.isArray(json.panels);
+    isFieldCurve = !isHistogram && !isVtkCompare && Array.isArray(json.curves) && !!(json.coords || json.triangles);
+    isPlot1D     = !isHistogram && !isVtkCompare && !isFieldCurve && Array.isArray(json.curves);
+    isVtk3D      = !isHistogram && !isVtkCompare && !isFieldCurve && !isPlot1D && !!(json.dic || json.fe);
+    isVtk        = !isHistogram && !isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk3D;
   } catch {
     isVtk = true;
   }
@@ -77,6 +80,9 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
         {isVtkCompare && (
           <VtkFigureCompare src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
+        {isHistogram && (
+          <Histogram src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
+        )}
         {isPlot1D && (
           <Plot1D src={`/figures/manuscrit/${fig.filename}`} height="calc(100dvh - 260px)" />
         )}
@@ -99,7 +105,7 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
             <script src={`/figures/manuscrit/${fig.filename}`} data-target={figId} />
           </>
         )}
-        {!isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk && !isVtk3D && !isJs && (
+        {!isHistogram && !isVtkCompare && !isFieldCurve && !isPlot1D && !isVtk && !isVtk3D && !isJs && (
           <iframe
             src={`/figures/manuscrit/${fig.filename}`}
             width="100%"
