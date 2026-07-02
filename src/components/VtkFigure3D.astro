@@ -427,6 +427,7 @@ async function initVtk3D(container: HTMLElement) {
         logErrEl.textContent =
           `⚠ Échelle logarithmique impossible : le champ « ${fieldName0} » contient des valeurs ≤ 0 (min = ${formatValue(vmin, label_format)}).`;
         logErrEl.style.display = 'flex';
+        currentFieldIdx = fieldIdx;
         return;
       }
       logErrEl.style.display = 'none';
