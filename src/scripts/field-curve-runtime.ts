@@ -171,6 +171,12 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
     }
     logErrEl.style.display = 'none';
     if (hasFixedRange) { vmin = cfg.vmin; vmax = cfg.vmax; }
+    if (log && !(vmin > 0)) {
+      logErrEl.textContent =
+        `⚠ Échelle logarithmique impossible : la borne inférieure forcée (vmin = ${formatValue(vmin, label_format)}) doit être strictement positive.`;
+      logErrEl.style.display = 'flex';
+      return;
+    }
     if (!isFinite(vmin) || !isFinite(vmax)) { vmin = 0; vmax = 1; }
     currentStep = st.step;
 
