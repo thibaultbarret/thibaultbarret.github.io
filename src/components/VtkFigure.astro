@@ -361,12 +361,13 @@ async function initVtk(container: HTMLElement) {
     lut.removeAllPoints();
     const range = (vmax - vmin) || 1;
     const eps = range * 1e-7;
+    const vmaxEff = (!log && vmax === vmin) ? vmin + 1 : vmax;
     for (let i = 0; i < n_colors; i++) {
       // Échantillonnage extrémités incluses : bande 0 → couleur min, bande n-1 → couleur max (rouge pur Abaqus)
       const t = n_colors > 1 ? i / (n_colors - 1) : 0.5;
       const [, r, g, b] = interpolateCmap(cmapStops, t);
-      const v_lo = levelValue(vmin, vmax, i / n_colors, log);
-      const v_hi = levelValue(vmin, vmax, (i + 1) / n_colors, log);
+      const v_lo = levelValue(vmin, vmaxEff, i / n_colors, log);
+      const v_hi = levelValue(vmin, vmaxEff, (i + 1) / n_colors, log);
       lut.addRGBPoint(v_lo, r, g, b);
       // Borne supérieure de CHAQUE bande, y compris la dernière : sans ce nœud,
       // la bande haute n'a qu'un seul point → vtk.js remplit (v_lo, vmax) avec la

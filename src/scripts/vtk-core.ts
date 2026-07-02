@@ -188,11 +188,12 @@ export function configureLut(
   lut.removeAllPoints();
   const range = (vmax - vmin) || 1;
   const eps = range * 1e-7;
+  const vmaxEff = (!log && vmax === vmin) ? vmin + 1 : vmax;
   for (let i = 0; i < nColors; i++) {
     const t = nColors > 1 ? i / (nColors - 1) : 0.5;
     const [r, g, b] = interpolateCmap(stops, t);
-    const v_lo = levelValue(vmin, vmax, i / nColors, log);
-    const v_hi = levelValue(vmin, vmax, (i + 1) / nColors, log);
+    const v_lo = levelValue(vmin, vmaxEff, i / nColors, log);
+    const v_hi = levelValue(vmin, vmaxEff, (i + 1) / nColors, log);
     lut.addRGBPoint(v_lo, r, g, b);
     lut.addRGBPoint(i < nColors - 1 ? v_hi - eps : v_hi, r, g, b);
   }
