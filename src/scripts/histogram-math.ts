@@ -8,6 +8,7 @@ import { levelValue } from './scale.ts';
 export function binEdges(vmin: number, vmax: number, bins: number, log: boolean): number[] {
   const e: number[] = [];
   for (let i = 0; i <= bins; i++) e.push(levelValue(vmin, vmax, i / bins, log));
+  e[0] = vmin; e[bins] = vmax;   // endpoints exacts (évite de perdre le point max par arrondi)
   return e;
 }
 

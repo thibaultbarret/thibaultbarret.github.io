@@ -23,7 +23,9 @@ function extractSlice(npy: NpyArray, comp: number, step: number): number[] {
 
 export async function initHistogram(el: HTMLElement): Promise<void> {
   const cfg = await fetch(el.dataset.src!).then(r => r.json());
-  const fieldsConfig: FieldDef[] = cfg.fields_config ?? [{ index: 0, name: 'Champ' }];
+  const fieldsConfig: FieldDef[] = (Array.isArray(cfg.fields_config) && cfg.fields_config.length > 0)
+    ? cfg.fields_config
+    : [{ index: 0, name: 'Champ' }];
   const scale: string = cfg.scale ?? 'linear';
   const log = scale === 'log';
   const bins: number = cfg.bins ?? 7;
@@ -103,8 +105,10 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
           if (bin < 0) { tooltip.style.display = 'none'; return; }
           tooltip.innerHTML = `[${fmtTick(edges[bin])}, ${fmtTick(edges[bin + 1])}]<br>${(counts[bin] * 100).toFixed(1)} %`;
           tooltip.style.display = 'block';
-          tooltip.style.left = `${(left ?? 0) + 12}px`;
-          tooltip.style.top = `${(top ?? 0) + 12}px`;
+          const orect = (self as any).over.getBoundingClientRect();
+          const frect = el.getBoundingClientRect();
+          tooltip.style.left = `${orect.left - frect.left + (left ?? 0) + 12}px`;
+          tooltip.style.top  = `${orect.top  - frect.top  + (top  ?? 0) + 12}px`;
         }],
       },
     };
