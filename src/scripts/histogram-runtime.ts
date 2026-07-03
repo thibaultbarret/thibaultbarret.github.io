@@ -153,6 +153,7 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
       const active = index === currentField;
       btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active ? '#89b4fa' : '#313244'};color:${active ? '#1e1e2e' : '#cdd6f4'};`;
       btn.addEventListener('click', () => {
+        stopAnim();
         fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
         btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
         currentField = index; render(currentStep, currentField);
@@ -161,14 +162,42 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
     });
   }
 
-  // Slider de pas + graduations
+  // Barre de contrôles de lecture (⏮ ⏪ ▶/⏸ ⏩ ⏭ + compteur), miroir de VtkFigure
+  const controls = el.querySelector<HTMLElement>('.hist-controls')!;
+  const label    = el.querySelector<HTMLElement>('.hist-label')!;
+  const playBtn  = el.querySelector<HTMLButtonElement>('.hist-play')!;
+  const firstBtn = el.querySelector<HTMLButtonElement>('.hist-first')!;
+  const prevBtn  = el.querySelector<HTMLButtonElement>('.hist-prev')!;
+  const nextBtn  = el.querySelector<HTMLButtonElement>('.hist-next')!;
+  const lastBtn  = el.querySelector<HTMLButtonElement>('.hist-last')!;
+  let animTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopAnim() {
+    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
+  }
+  function goTo(pos: number) {
+    currentStep = Math.max(0, Math.min(pos, S - 1));
+    label.textContent = `${currentStep + 1}/${S}`;
+    slider.value = String(currentStep);
+    render(currentStep, currentField);
+  }
+
   if (S > 1) {
+    controls.style.display = 'flex';
     slider.max = String(S - 1);
     const listId = 'hist-dl-' + Math.random().toString(36).slice(2);
     datalist.id = listId; slider.setAttribute('list', listId);
     for (let i = 0; i < S; i++) { const o = document.createElement('option'); o.value = String(i); datalist.appendChild(o); }
-    slider.parentElement!.style.display = 'flex';
-    slider.addEventListener('input', () => { currentStep = parseInt(slider.value); render(currentStep, currentField); });
+    label.textContent = `1/${S}`;
+    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
+    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
+    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentStep - 1); });
+    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentStep + 1); });
+    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(S - 1); });
+    playBtn.addEventListener('click', () => {
+      if (animTimer) { stopAnim(); }
+      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentStep + 1) % S), 200); }
+    });
   }
 
   // Redimensionnement

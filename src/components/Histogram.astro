@@ -30,9 +30,15 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <div class="hist-xlabel" style="grid-column:2;grid-row:2;display:none;text-align:center;color:#cdd6f4;"></div>
   </div>
 
-  <div class="hist-controls" style="display:none;position:absolute;left:8px;right:8px;bottom:10px;align-items:center;gap:8px;z-index:16;">
+  <div class="hist-controls" style="display:none;position:absolute;left:8px;right:8px;bottom:8px;align-items:center;gap:6px;z-index:16;background:rgba(24,24,37,.85);padding:6px 8px;border-radius:4px;">
+    <button class="hist-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
+    <button class="hist-prev"  title="Pas précédent" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏪</button>
+    <button class="hist-play"  title="Lecture"       style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">▶</button>
+    <button class="hist-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
+    <button class="hist-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
     <input class="hist-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
     <datalist class="hist-datalist"></datalist>
+    <span class="hist-label" style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
   </div>
 </div>
 
