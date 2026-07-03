@@ -59,7 +59,10 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
   let counts: number[] = [];
   let u: uPlot | null = null;
 
-  const fmtTick = (v: number) => formatValue(v, '.1e');
+  // uPlot peut passer null dans les splits de l'axe log → garder l'axe robuste
+  // (sinon formatValue(null) plante et tout le rendu uPlot avorte).
+  const fmtTick = (v: number | null | undefined) =>
+    (v == null || !isFinite(v)) ? '' : formatValue(v, '.1e');
 
   function buildPlot() {
     const opts: uPlot.Options = {
