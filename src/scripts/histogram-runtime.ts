@@ -65,6 +65,7 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
   // État de tranche partagé (lu par range/splits/draw d'uPlot)
   let edges: number[] = [0, 1];
   let counts: number[] = [];
+  let axisLo = 0, axisHi = 1;   // bornes de l'AXE x (cadrage), indépendantes des bins
   let u: uPlot | null = null;
 
   // uPlot peut passer null dans les splits de l'axe log → garder l'axe robuste
@@ -87,7 +88,7 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
       cursor: { drag: { x: false, y: false }, points: { show: false } },
       legend: { show: false },
       scales: {
-        x: { distr: log ? 3 : 1, range: () => [edges[0], edges[edges.length - 1]] as uPlot.Range.MinMax },
+        x: { distr: log ? 3 : 1, range: () => [axisLo, axisHi] as uPlot.Range.MinMax },
         y: { range: [0, 1], auto: false },
       },
       axes: [
@@ -110,6 +111,10 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
           const ctx = self.ctx;
           const y0 = self.valToPos(0, 'y', true);
           ctx.save();
+          // Rogner à la zone de tracé : les barres (issues des données) peuvent
+          // déborder du cadre d'axe fixé par vmin/vmax.
+          const bb = self.bbox;
+          ctx.beginPath(); ctx.rect(bb.left, bb.top, bb.width, bb.height); ctx.clip();
           ctx.fillStyle = barColor; ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
           for (let i = 0; i < counts.length; i++) {
             const xL = self.valToPos(edges[i], 'x', true);
@@ -146,23 +151,27 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
     const name = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
 
     // Bornes effectives : vmin/vmax du JSON (indépendants) sinon min/max de la tranche.
-    const lo = fixLo ?? vmin;
-    const hi = fixHi ?? vmax;
-
-    if (log && !(lo > 0)) {
-      const src = (fixLo != null) ? 'la borne inférieure forcée' : `le champ « ${name} »`;
-      errEl.textContent = `⚠ Histogramme log impossible : ${src} doit être strictement positive (min = ${formatValue(lo, '.2e')}).`;
+    if (log && !(vmin > 0)) {
+      errEl.textContent = `⚠ Histogramme log impossible : le champ « ${name} » contient des valeurs ≤ 0 (min = ${formatValue(vmin, '.2e')}).`;
       errEl.style.display = 'flex'; if (u) mount.style.visibility = 'hidden'; return;
     }
-    if (!(lo < hi)) {
-      errEl.textContent = `⚠ Histogramme impossible : plage vide ou dégénérée (${formatValue(lo, '.2e')} … ${formatValue(hi, '.2e')}).`;
+    if (!(vmin < vmax)) {
+      errEl.textContent = `⚠ Histogramme impossible : le champ « ${name} » est constant (valeur = ${formatValue(vmin, '.2e')}).`;
       errEl.style.display = 'flex'; mount.style.visibility = 'hidden'; return;
     }
     errEl.style.display = 'none'; mount.style.visibility = 'visible';
 
-    edges = binEdges(lo, hi, bins, log);
+    // Bins calculés À PARTIR DES DONNÉES (min/max de la tranche) + nombre de barres.
+    edges = binEdges(vmin, vmax, bins, log);
     counts = histogramCounts(values, edges).counts;
     const centers = counts.map((_, i) => edges[i] + (edges[i + 1] - edges[i]) / 2);
+
+    // vmin/vmax du JSON ne cadrent QUE l'axe x (pas les bins). Repli sur les
+    // données si absents ; en log la borne basse d'axe doit rester > 0.
+    axisLo = (fixLo != null && (!log || fixLo > 0)) ? fixLo : vmin;
+    axisHi = (fixHi != null) ? fixHi : vmax;
+    if (!(axisLo < axisHi)) { axisLo = vmin; axisHi = vmax; }
+
     if (!u) buildPlot();
     u!.setData([centers, counts] as uPlot.AlignedData);
   }
