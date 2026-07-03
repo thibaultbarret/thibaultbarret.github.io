@@ -28,10 +28,18 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
     : [{ index: 0, name: 'Champ' }];
   const scale: string = cfg.scale ?? 'linear';
   const log = scale === 'log';
-  const bins: number = cfg.bins ?? 7;
+  const bins: number = Number(cfg.bins) || 7;
   const xLabel: string = cfg.x_label ?? 'Valeur';
   const yLabel: string = cfg.y_label ?? 'Effectif';
   const barColor: string = cfg.bar_color ?? '#89b4fa';
+
+  // Bornes fixes optionnelles ; tolère un nombre OU une chaîne numérique ("1e-11").
+  const parseBound = (v: unknown): number | null => {
+    const n = typeof v === 'string' ? parseFloat(v) : (v as number);
+    return (typeof n === 'number' && isFinite(n)) ? n : null;
+  };
+  const fixLo = parseBound(cfg.vmin);
+  const fixHi = parseBound(cfg.vmax);
 
   const npy = await fetchNpy(cfg.data);
   const S = npy.shape[npy.shape.length - 1];
@@ -138,11 +146,11 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
     const name = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
 
     // Bornes effectives : vmin/vmax du JSON (indépendants) sinon min/max de la tranche.
-    const lo = (typeof cfg.vmin === 'number') ? cfg.vmin : vmin;
-    const hi = (typeof cfg.vmax === 'number') ? cfg.vmax : vmax;
+    const lo = fixLo ?? vmin;
+    const hi = fixHi ?? vmax;
 
     if (log && !(lo > 0)) {
-      const src = (typeof cfg.vmin === 'number') ? 'la borne inférieure forcée' : `le champ « ${name} »`;
+      const src = (fixLo != null) ? 'la borne inférieure forcée' : `le champ « ${name} »`;
       errEl.textContent = `⚠ Histogramme log impossible : ${src} doit être strictement positive (min = ${formatValue(lo, '.2e')}).`;
       errEl.style.display = 'flex'; if (u) mount.style.visibility = 'hidden'; return;
     }
