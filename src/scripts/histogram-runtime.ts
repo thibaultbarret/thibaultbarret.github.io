@@ -64,6 +64,14 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
   const fmtTick = (v: number | null | undefined) =>
     (v == null || !isFinite(v)) ? '' : formatValue(v, '.1e');
 
+  // Axe x log : n'étiqueter QUE les décades (puissances de 10), en « 10ⁿ ».
+  const SUP: Record<string, string> = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const fmtDecade = (v: number | null | undefined) => {
+    if (v == null || !isFinite(v) || v <= 0) return '';
+    const k = Math.log10(v), kr = Math.round(k);
+    return Math.abs(k - kr) < 1e-6 ? '10' + String(kr).split('').map(c => SUP[c] ?? c).join('') : '';
+  };
+
   function buildPlot() {
     const opts: uPlot.Options = {
       width: mount.clientWidth || 300,
@@ -75,8 +83,13 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
         y: { range: [0, 1], auto: false },
       },
       axes: [
-        { stroke: '#a6adc8', grid: { stroke: '#313244', width: 1 }, ticks: { stroke: '#45475a' },
-          splits: () => edges, values: (_u, sp) => sp.map(fmtTick), font: '10px monospace', rotate: -35, size: 50 },
+        // Log : ticks natifs uPlot aux puissances de 10, étiquetés « 10ⁿ » (les
+        // non-décades restent sans label). Linéaire : ticks ronds auto d'uPlot.
+        log
+          ? { stroke: '#a6adc8', grid: { stroke: '#313244', width: 1 }, ticks: { stroke: '#45475a' },
+              values: (_u, sp) => sp.map(fmtDecade), font: '11px monospace', size: 40 }
+          : { stroke: '#a6adc8', grid: { stroke: '#313244', width: 1 }, ticks: { stroke: '#45475a' },
+              values: (_u, sp) => sp.map(fmtTick), font: '10px monospace', rotate: -35, size: 50 },
         { stroke: '#a6adc8', grid: { stroke: '#313244', width: 1 }, ticks: { stroke: '#45475a' },
           font: '11px monospace' },
       ],
@@ -124,17 +137,22 @@ export async function initHistogram(el: HTMLElement): Promise<void> {
     for (let i = 0; i < values.length; i++) { const v = values[i]; if (isFinite(v)) { if (v < vmin) vmin = v; if (v > vmax) vmax = v; } }
     const name = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
 
-    if (log && !(vmin > 0)) {
-      errEl.textContent = `⚠ Histogramme log impossible : le champ « ${name} » contient des valeurs ≤ 0 (min = ${formatValue(vmin, '.2e')}).`;
+    // Bornes effectives : vmin/vmax du JSON (indépendants) sinon min/max de la tranche.
+    const lo = (typeof cfg.vmin === 'number') ? cfg.vmin : vmin;
+    const hi = (typeof cfg.vmax === 'number') ? cfg.vmax : vmax;
+
+    if (log && !(lo > 0)) {
+      const src = (typeof cfg.vmin === 'number') ? 'la borne inférieure forcée' : `le champ « ${name} »`;
+      errEl.textContent = `⚠ Histogramme log impossible : ${src} doit être strictement positive (min = ${formatValue(lo, '.2e')}).`;
       errEl.style.display = 'flex'; if (u) mount.style.visibility = 'hidden'; return;
     }
-    if (!(vmin < vmax)) {
-      errEl.textContent = `⚠ Histogramme impossible : le champ « ${name} » est constant (valeur = ${formatValue(vmin, '.2e')}).`;
+    if (!(lo < hi)) {
+      errEl.textContent = `⚠ Histogramme impossible : plage vide ou dégénérée (${formatValue(lo, '.2e')} … ${formatValue(hi, '.2e')}).`;
       errEl.style.display = 'flex'; mount.style.visibility = 'hidden'; return;
     }
     errEl.style.display = 'none'; mount.style.visibility = 'visible';
 
-    edges = binEdges(vmin, vmax, bins, log);
+    edges = binEdges(lo, hi, bins, log);
     counts = histogramCounts(values, edges).counts;
     const centers = counts.map((_, i) => edges[i] + (edges[i + 1] - edges[i]) / 2);
     if (!u) buildPlot();
