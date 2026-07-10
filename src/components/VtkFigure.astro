@@ -221,6 +221,21 @@ function makeCells(raw: RawData): Uint32Array {
   return buf;
 }
 
+// Cellules triangulaires en excluant celles dont AU MOINS UN sommet est NaN
+// (donnée manquante) → l'emplacement devient un trou transparent (« sans couleur »).
+function cellsWithoutNaN(raw: RawData, scalars: ArrayLike<number>): Uint32Array {
+  const { triangles } = raw;
+  const T = triangles.shape[0];
+  const out: number[] = [];
+  for (let t = 0; t < T; t++) {
+    const a = idx(triangles.data, triangles.shape, t, 0);
+    const b = idx(triangles.data, triangles.shape, t, 1);
+    const c = idx(triangles.data, triangles.shape, t, 2);
+    if (isFinite(scalars[a]) && isFinite(scalars[b]) && isFinite(scalars[c])) out.push(3, a, b, c);
+  }
+  return Uint32Array.from(out);
+}
+
 // ── Texture depuis URL ────────────────────────────────────────────────────
 async function toTexture(src: string) {
   const img = new Image();
@@ -543,9 +558,9 @@ async function initVtk(container: HTMLElement) {
       return;
     }
     logErrEl.style.display = 'none';
-    for (let i = 0; i < newScalars.length; i++) {
-      if (!isFinite(newScalars[i])) newScalars[i] = vmin;
-    }
+    // Cellules sans donnée (NaN) retirées → trou transparent (pas de substitution).
+    polys.setData(cellsWithoutNaN(raw, newScalars));
+    polys.modified();
     scalarsArr.setData(newScalars);
     scalarsArr.modified();
     pd.modified();
