@@ -18,6 +18,7 @@ import vtkMouseCameraTrackballZoomManipulator  from '@kitware/vtk.js/Interaction
 import {
   CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
+  applyThresholdLut, drawThresholdColorbar,
   resolveStepText,
 } from './vtk-core';
 import type { NpyArray, RawData, StepText, ColorbarEls } from './vtk-core';
@@ -62,11 +63,21 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
   const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8,
           label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
-  const log = scale === 'log';
   const hasFixedRange = typeof cfg.vmin === 'number' && typeof cfg.vmax === 'number';
   const steps: StepCfg[] = cfg.steps ?? [{ step: 0 }];
   const panelsCfg: PanelCfg[] = cfg.panels ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
+  const toNum = (v: unknown): number => {
+    const n = typeof v === 'string' ? parseFloat(v) : (v as number);
+    return typeof n === 'number' && isFinite(n) ? n : NaN;
+  };
+  const sBas = toNum(cfg.seuil_bas);
+  const sHaut = toNum(cfg.seuil_haut);
+  const isThreshold = cmap === 'threshold' && isFinite(sBas) && isFinite(sHaut) && sBas < sHaut;
+  if (cmap === 'threshold' && !isThreshold) {
+    console.warn('[VtkFigureCompare] cmap "threshold" ignoré : seuil_bas/seuil_haut manquants, non numériques, ou seuil_bas >= seuil_haut. Repli sur la colormap continue.');
+  }
+  const log = scale === 'log' && !isThreshold;
 
   // Si AU MOINS un panneau a du texte, on réserve une zone de texte de hauteur
   // FIXE et IDENTIQUE sur TOUS les panneaux (même vides) pour que les canvas
@@ -253,17 +264,23 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     currentStep = st.step;
 
     // 2) LUT + colorbar (une fois)
-    configureLut(lut, cmapStops, n_colors, vmin, vmax, log);
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
-    drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
+    if (isThreshold) {
+      applyThresholdLut(lut, sBas, sHaut);
+      drawThresholdColorbar(cbEls, fieldName, sBas, sHaut, label_format, label_color);
+    } else {
+      configureLut(lut, cmapStops, n_colors, vmin, vmax, log);
+      drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
+    }
 
     // 3) Appliquer scalaires + range + texte à chaque panneau, puis rendre
+    const [srLo, srHi] = isThreshold ? [sBas, sHaut] : [vmin, vmax];
     panels.forEach((p, k) => {
       const sc = currentScalars[k];
       for (let i = 0; i < sc.length; i++) if (!isFinite(sc[i])) sc[i] = vmin;
       p.scalarsArr.setData(sc);
       p.scalarsArr.modified(); p.pd.modified();
-      p.meshMapper.setScalarRange(vmin, vmax);
+      p.meshMapper.setScalarRange(srLo, srHi);
       // Texte propre au panneau, suit le pas (st.step) et le champ courant.
       // `anyText` est la source de vérité (les zones texte ne sont créées que
       // dans ce cas) — ne pas se fier à l'état DOM display.
