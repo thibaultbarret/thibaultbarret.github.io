@@ -63,6 +63,8 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
   const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8,
           label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  // Format de la valeur au survol du champ (tooltip). Défaut : label_format (colorbar).
+  const tooltip_format = cfg.tooltip_format ?? label_format;
   const hasFixedRange = typeof cfg.vmin === 'number' && typeof cfg.vmax === 'number';
   const steps: StepCfg[] = cfg.steps ?? [{ step: 0 }];
   const panelsCfg: PanelCfg[] = cfg.panels ?? [];
@@ -433,7 +435,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
       if (ptId >= 0 && ptId < p.scalarsArr.getNumberOfTuples()) {
         const val = p.scalarsArr.getValue(ptId);
         if (isFinite(val)) {
-          p.tooltip.textContent = formatValue(val, label_format);
+          p.tooltip.textContent = formatValue(val, tooltip_format);
           p.tooltip.style.display = 'block';
           const rect = p.canvasEl.getBoundingClientRect();
           p.tooltip.style.left = `${Math.min(cssX + 12, rect.width - 90)}px`;

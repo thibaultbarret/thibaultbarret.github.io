@@ -242,6 +242,8 @@ async function initVtk3D(container: HTMLElement) {
   const dualMode = hasDic && hasFe;
 
   const { cmap = 'RdYlGn_r', n_colors = 10, opacity = 0.8, label_format = '.2e', label_color = '#a6adc8', scale = 'linear' } = cfg;
+  // Format de la valeur au survol du champ (tooltip). Défaut : label_format (colorbar).
+  const tooltip_format = cfg.tooltip_format ?? label_format;
   const log = scale === 'log';
   const steps: { step: number; text?: StepText }[] = cfg.steps ?? [];
   const cmapStops = CMAPS[cmap] ?? CMAPS['viridis'];
@@ -544,7 +546,7 @@ async function initVtk3D(container: HTMLElement) {
       if (ptId >= 0 && ptId < activePd.scalarsArr.getNumberOfTuples()) {
         const val = activePd.scalarsArr.getValue(ptId);
         if (isFinite(val)) {
-          tooltip.textContent = formatValue(val, label_format);
+          tooltip.textContent = formatValue(val, tooltip_format);
           tooltip.style.display = 'block';
           const rect = canvasEl.getBoundingClientRect();
           tooltip.style.left = `${Math.min(cssX + 12, rect.width - 90)}px`;
