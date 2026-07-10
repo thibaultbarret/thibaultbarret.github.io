@@ -90,6 +90,17 @@ export async function initCompare(container: HTMLElement): Promise<void> {
 
   const panelsRow = container.querySelector<HTMLElement>('.vtkc-panels')!;
 
+  // Disposition en grille : `columns` colonnes (défaut = tout sur une seule ligne).
+  const nPanels = panelsCfg.length;
+  const colRaw = typeof cfg.columns === 'string' ? parseFloat(cfg.columns) : cfg.columns;
+  const columns = (typeof colRaw === 'number' && isFinite(colRaw) && colRaw >= 1)
+    ? Math.min(Math.floor(colRaw), Math.max(1, nPanels))
+    : Math.max(1, nPanels);
+  const rows = Math.max(1, Math.ceil(nPanels / columns));
+  panelsRow.style.display = 'grid';
+  panelsRow.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+  panelsRow.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
   // LUT unique partagée par tous les mappers
   const lut = vtkColorTransferFunction.newInstance();
 
@@ -98,7 +109,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   for (const pcfg of panelsCfg) {
     // DOM du panneau : colonne [zone texte au-dessus] + [hôte de rendu]
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #45475a; border-radius:4px;';
+    wrap.style.cssText = 'flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #45475a; border-radius:4px;';
     // Zone texte propre au panneau, au-dessus de la figure (masquée si pas de texte)
     const textEl = document.createElement('div');
     textEl.style.cssText = 'display:none; flex-shrink:0; box-sizing:border-box; overflow-y:auto; padding:10px 12px; background:rgba(24,24,37,.95); border-bottom:1px solid #45475a; color:#cdd6f4; font:12px/1.6 sans-serif;';

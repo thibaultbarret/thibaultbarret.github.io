@@ -4,6 +4,7 @@
 //   { cmap, n_colors, opacity, label_format, label_color, vmin?, vmax?,
 //     fields_config | field_index/field_name, steps[],
 //     panels: [ { title, coords, triangles, fields, displacements?, images?|image? } ] }
+//   columns?: nombre de colonnes de la grille de panneaux (défaut : tout sur une ligne)
 interface Props { src: string; height?: number | string; }
 const { src, height = 450 } = Astro.props;
 const heightCss = typeof height === 'string' ? height : `${height}px`;
