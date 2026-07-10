@@ -201,6 +201,32 @@ export function configureLut(
   lut.updateRange();
 }
 
+// ── Mode threshold : 3 couleurs fixes bornées par 2 seuils ─────────────────
+// Couleurs figées (surcharge JSON reportée). GARDER SYNCHRONISÉ avec VtkFigure.astro.
+export const THRESHOLD_COLORS: [number,number,number][] = [
+  [0.298, 0.686, 0.314], // vert   — valeur < seuil_bas
+  [1.000, 0.596, 0.000], // orange — seuil_bas ≤ valeur < seuil_haut
+  [0.898, 0.224, 0.208], // rouge  — valeur ≥ seuil_haut
+];
+
+// LUT en escalier à 3 paliers. Frontières = les seuils (pas vmin/vmax).
+// Double nœud par palier (cf. LRN-018) + clamping natif pour < sBas et ≥ sHaut.
+export function applyThresholdLut(
+  lut: vtkColorTransferFunction, sBas: number, sHaut: number,
+) {
+  lut.removeAllPoints();
+  const eps = (sHaut - sBas) * 1e-7;
+  const [gr, gg, gb] = THRESHOLD_COLORS[0];
+  const [or_, og, ob] = THRESHOLD_COLORS[1];
+  const [rr, rg, rb] = THRESHOLD_COLORS[2];
+  lut.addRGBPoint(sBas - eps, gr, gg, gb);   // vert (clampé en dessous)
+  lut.addRGBPoint(sBas,       or_, og, ob);  // bascule orange au seuil bas
+  lut.addRGBPoint(sHaut - eps, or_, og, ob);
+  lut.addRGBPoint(sHaut,      rr, rg, rb);   // rouge (clampé au dessus)
+  lut.setMappingRange(sBas - eps, sHaut);
+  lut.updateRange();
+}
+
 // ── Colorbar (éléments DOM passés explicitement) ───────────────────────────
 export interface ColorbarEls { title: HTMLElement; canvas: HTMLCanvasElement; labels: HTMLElement }
 export function drawColorbar(
@@ -224,6 +250,31 @@ export function drawColorbar(
     const v = levelValue(vmin, vmax, 1 - i / nColors, log);
     const s = document.createElement('span');
     s.style.cssText = `position:absolute;top:${i * Hpx / nColors}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
+    s.textContent = formatValue(v, labelFmt);
+    labels.appendChild(s);
+  }
+}
+
+// Colorbar 3 bandes égales : rouge (haut) / orange / vert (bas), 2 labels aux seuils.
+export function drawThresholdColorbar(
+  els: ColorbarEls, name: string, sBas: number, sHaut: number,
+  labelFmt: string, labelColor: string,
+) {
+  const { title, canvas, labels } = els;
+  const Hpx = canvas.height;
+  labels.innerHTML = '';
+  title.textContent = name;
+  const ctx = canvas.getContext('2d')!;
+  const bandH = Hpx / 3;
+  const bands = [THRESHOLD_COLORS[2], THRESHOLD_COLORS[1], THRESHOLD_COLORS[0]]; // haut→bas
+  for (let i = 0; i < 3; i++) {
+    const [r, g, b] = bands[i];
+    ctx.fillStyle = `rgb(${(r*255)|0},${(g*255)|0},${(b*255)|0})`;
+    ctx.fillRect(0, Math.floor(i * bandH), canvas.width, Math.ceil(bandH) + 1);
+  }
+  for (const [y, v] of [[Hpx / 3, sHaut], [2 * Hpx / 3, sBas]] as const) {
+    const s = document.createElement('span');
+    s.style.cssText = `position:absolute;top:${y}px;right:0;transform:translateY(-50%);color:${labelColor};font:11px monospace;text-align:right;white-space:nowrap;`;
     s.textContent = formatValue(v, labelFmt);
     labels.appendChild(s);
   }
