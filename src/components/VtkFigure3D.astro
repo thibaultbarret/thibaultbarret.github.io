@@ -233,6 +233,25 @@ function fieldRange(sc: Float32Array): [number, number] {
   return [vmin, vmax];
 }
 
+// Reconstruit le tableau de cellules en excluant toute cellule dont au moins
+// un sommet a un scalaire NaN (cf. VtkFigure.astro, 63fc64c — mode maillage
+// unique seulement : le mode double maillage n'a pas de scalaires).
+function cellsWithoutNaN(cellSrc: NpyArray, vertsPerCell: number, scalars: ArrayLike<number>): Uint32Array {
+  const T = cellSrc.shape[0];
+  const out: number[] = [];
+  for (let t = 0; t < T; t++) {
+    const v: number[] = [];
+    let ok = true;
+    for (let k = 0; k < vertsPerCell; k++) {
+      const vi = idx(cellSrc.data, cellSrc.shape, t, k);
+      v.push(vi);
+      if (!isFinite(scalars[vi])) ok = false;
+    }
+    if (ok) out.push(vertsPerCell, ...v);
+  }
+  return Uint32Array.from(out);
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
 async function initVtk3D(container: HTMLElement) {
   const cfg = await fetch(container.dataset.src!).then(r => r.json());
@@ -319,9 +338,9 @@ async function initVtk3D(container: HTMLElement) {
     lut.updateRange();
   }
 
-  type MeshPd = { pd: any; pts: any; scalarsArr: any };
+  type MeshPd = { pd: any; pts: any; scalarsArr: any; polys: any; cellSrc: NpyArray; vertsPerCell: number };
 
-  function buildPd(N: number, cells: Uint32Array): MeshPd {
+  function buildPd(N: number, cells: Uint32Array, cellSrc: NpyArray, vertsPerCell: number): MeshPd {
     const pd  = vtkPolyData.newInstance();
     const pts = vtkPoints.newInstance();
     pts.setData(new Float32Array(N * 3), 3);
@@ -333,7 +352,7 @@ async function initVtk3D(container: HTMLElement) {
       ? vtkDataArray.newInstance({ name: 'field', values: new Float32Array(N), numberOfComponents: 1 })
       : null;
     if (scalarsArr) pd.getPointData().setScalars(scalarsArr);
-    return { pd, pts, scalarsArr };
+    return { pd, pts, scalarsArr, polys, cellSrc, vertsPerCell };
   }
 
   function addActor(pd: any, fixedColor?: [number, number, number]): any {
@@ -350,8 +369,8 @@ async function initVtk3D(container: HTMLElement) {
     return mapper;
   }
 
-  const dicPd  = dicMesh ? buildPd(dicMesh.coords.shape[0], makeTriangleCells(dicMesh.triangles)) : null;
-  const fePd   = feMesh  ? buildPd(feMesh.coords.shape[0],  makeQuadCells(feMesh.connectivity))   : null;
+  const dicPd  = dicMesh ? buildPd(dicMesh.coords.shape[0], makeTriangleCells(dicMesh.triangles), dicMesh.triangles, 3) : null;
+  const fePd   = feMesh  ? buildPd(feMesh.coords.shape[0],  makeQuadCells(feMesh.connectivity), feMesh.connectivity, 4)   : null;
   const dicMapper = dicPd ? addActor(dicPd.pd,  dualMode ? [0.455, 0.780, 0.925] : undefined) : null;
   const feMapper  = fePd  ? addActor(fePd.pd,   dualMode ? [0.980, 0.702, 0.529] : undefined) : null;
 
@@ -435,9 +454,8 @@ async function initVtk3D(container: HTMLElement) {
       }
       logErrEl.style.display = 'none';
       if (!isFinite(vmin) || !isFinite(vmax)) { renWin.render(); return; }
-      for (let i = 0; i < newScalars.length; i++) {
-        if (!isFinite(newScalars[i])) newScalars[i] = vmin;
-      }
+      activePd.polys.setData(cellsWithoutNaN(activePd.cellSrc, activePd.vertsPerCell, newScalars));
+      activePd.polys.modified();
       activePd.scalarsArr.setData(newScalars);
       activePd.scalarsArr.modified();
       activePd.pd.modified();

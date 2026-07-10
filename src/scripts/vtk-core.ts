@@ -117,6 +117,22 @@ export function makeCells(raw: RawData): Uint32Array {
   return buf;
 }
 
+// Reconstruit le tableau de cellules en excluant toute cellule dont au moins
+// un sommet a un scalaire NaN. Les points NaN restent inchangés (non référencés
+// = non dessinés) — vtk.js gère ce cas nativement (cf. VtkFigure.astro, 63fc64c).
+export function cellsWithoutNaN(raw: RawData, scalars: ArrayLike<number>): Uint32Array {
+  const { triangles } = raw;
+  const T = triangles.shape[0];
+  const out: number[] = [];
+  for (let t = 0; t < T; t++) {
+    const a = idx(triangles.data, triangles.shape, t, 0);
+    const b = idx(triangles.data, triangles.shape, t, 1);
+    const c = idx(triangles.data, triangles.shape, t, 2);
+    if (isFinite(scalars[a]) && isFinite(scalars[b]) && isFinite(scalars[c])) out.push(3, a, b, c);
+  }
+  return Uint32Array.from(out);
+}
+
 // ── Textures ──────────────────────────────────────────────────────────────
 export async function toTexture(src: string) {
   const img = new Image();

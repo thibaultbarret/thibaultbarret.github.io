@@ -16,7 +16,7 @@ import vtkPointPicker                          from '@kitware/vtk.js/Rendering/C
 import vtkMouseCameraTrackballPanManipulator   from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
 import vtkMouseCameraTrackballZoomManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 import {
-  CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells,
+  CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells, cellsWithoutNaN,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
   applyThresholdLut, drawThresholdColorbar,
   resolveStepText,
@@ -50,7 +50,7 @@ interface Panel {
   cfg: PanelCfg;
   rw: any; renderer: any; renWin: any; cam: any; canvasEl: HTMLElement;
   raw: RawData; images: NpyArray | null;
-  pd: any; pts: any; scalarsArr: any; meshActor: any; meshMapper: any;
+  pd: any; pts: any; polys: any; scalarsArr: any; meshActor: any; meshMapper: any;
   bgActor: any; imgH: number; cameraInit: boolean;
   texCache: Map<string, { tex: any; w: number; h: number }>;
   tooltip: HTMLElement; textEl: HTMLElement;
@@ -173,7 +173,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
 
     panels.push({
       cfg: pcfg, rw, renderer, renWin, cam, canvasEl, raw, images: imagesArr,
-      pd, pts, scalarsArr, meshActor, meshMapper,
+      pd, pts, polys, scalarsArr, meshActor, meshMapper,
       bgActor: null, imgH: dataH, cameraInit: false,
       texCache: new Map(), tooltip, textEl,
     });
@@ -279,7 +279,8 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     const [srLo, srHi] = isThreshold ? [sBas, sHaut] : [vmin, vmax];
     panels.forEach((p, k) => {
       const sc = currentScalars[k];
-      for (let i = 0; i < sc.length; i++) if (!isFinite(sc[i])) sc[i] = vmin;
+      p.polys.setData(cellsWithoutNaN(p.raw, sc));
+      p.polys.modified();
       p.scalarsArr.setData(sc);
       p.scalarsArr.modified(); p.pd.modified();
       p.meshMapper.setScalarRange(srLo, srHi);

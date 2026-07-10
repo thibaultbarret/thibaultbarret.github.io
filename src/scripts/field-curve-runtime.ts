@@ -16,7 +16,7 @@ import vtkPointPicker                          from '@kitware/vtk.js/Rendering/C
 import vtkMouseCameraTrackballPanManipulator   from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
 import vtkMouseCameraTrackballZoomManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 import {
-  CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells,
+  CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells, cellsWithoutNaN,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
 } from './vtk-core';
 import type { NpyArray, RawData, ColorbarEls } from './vtk-core';
@@ -186,7 +186,8 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
     const fieldName = fieldsConfig.find(f => f.index === fieldIdx)?.name ?? String(fieldIdx);
     drawColorbar(cbEls, fieldName, cmapStops, vmin, vmax, n_colors, label_format, label_color, log);
 
-    for (let i = 0; i < sc.length; i++) if (!isFinite(sc[i])) sc[i] = vmin;
+    polys.setData(cellsWithoutNaN(raw, sc));
+    polys.modified();
     scalarsArr.setData(sc);
     scalarsArr.modified(); pd.modified();
     meshMapper.setScalarRange(vmin, vmax);
