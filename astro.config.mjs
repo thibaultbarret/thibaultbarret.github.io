@@ -5,13 +5,14 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import katexMacros from './src/katex-macros.js';
 import remarkTreesitter from './src/plugins/remark-treesitter.mjs';
+import rehypeTableWrap from './src/plugins/rehype-table-wrap.mjs';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://thibaultbarret.github.io',
   markdown: {
     remarkPlugins: [remarkTreesitter, remarkMath],
-    rehypePlugins: [[rehypeKatex, { macros: katexMacros }]],
+    rehypePlugins: [[rehypeKatex, { macros: katexMacros }], rehypeTableWrap],
   },
   vite: {
     plugins: [tailwindcss()]
