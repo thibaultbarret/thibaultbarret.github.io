@@ -9,6 +9,8 @@ import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
 import rehypeKatex from 'rehype-katex';
 import rehypeStringify from 'rehype-stringify';
+import remarkGfm from 'remark-gfm';
+import rehypeTableWrap from '../../../plugins/rehype-table-wrap.mjs';
 
 type Segment =
   | { type: 'text';   html: string }
@@ -31,8 +33,10 @@ async function parseBody(body: string): Promise<Segment[]> {
 
   const processor = unified()
     .use(remarkParse)
+    .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype)
+    .use(rehypeTableWrap)
     .use(rehypeSlug)
     .use(rehypeKatex)
     .use(rehypeStringify);
