@@ -72,9 +72,105 @@ body {
 .prose h4 { font-size: 1rem;   font-weight: 600; color: var(--heading-4); font-style: italic; margin-top: 1.25rem; margin-bottom: 0.5rem; }
 .prose h5 { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); margin-top: 1rem;   margin-bottom: 0.25rem; }
 .prose p  { color: var(--text-muted); line-height: 1.8; margin-bottom: 1.25rem; }
-.prose ul { color: var(--text-muted); padding-left: 1.5rem; margin-bottom: 1.25rem; list-style-type: disc; }
-.prose ol { color: var(--text-muted); padding-left: 1.5rem; margin-bottom: 1.25rem; list-style-type: decimal; }
+/* Listes — marqueurs « nœud de maillage » (carré, clin d'œil FE/DIC) plutôt que puce ronde.
+   Deux contextes de contenu : .prose (projets/prog/recherche) ET .prose-manuscrit
+   (chapitres du manuscrit, dont padding/marges vivent dans les pages Astro scoped). */
+.prose ul,       .prose ol,
+.prose-manuscrit ul, .prose-manuscrit ol { list-style: none; }
+.prose ul,
+.prose ol { color: var(--text-muted); padding-left: 1.6rem; margin-bottom: 1.25rem; }
+.prose li,
+.prose-manuscrit li { position: relative; }
 .prose li { margin-bottom: 0.4rem; line-height: 1.7; }
+.prose li > p { margin-bottom: 0.4rem; }              /* listes « loose » : pas de saut de 1.25rem */
+.prose li > ul,
+.prose li > ol { margin-top: 0.4rem; margin-bottom: 0.6rem; }
+
+/* Puce = petit nœud carré plein, aligné sur la 1ʳᵉ ligne */
+.prose ul > li::before,
+.prose-manuscrit ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.15rem;
+  top: 0.62em;
+  width: 0.42em;
+  height: 0.42em;
+  background: var(--accent);
+  border-radius: 1px;
+}
+/* Niveau imbriqué = nœud creux (sous-nœud) */
+.prose ul ul > li::before,
+.prose-manuscrit ul ul > li::before {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+}
+
+/* Listes ordonnées — index en mono/accent, façon numérotation d'équations */
+.prose ol,       .prose-manuscrit ol       { counter-reset: prose-ol; }
+.prose ol > li,  .prose-manuscrit ol > li  { counter-increment: prose-ol; }
+.prose ol > li::before,
+.prose-manuscrit ol > li::before {
+  content: counter(prose-ol) ".";
+  position: absolute;
+  left: -1.5rem;
+  top: 0;
+  width: 1.2rem;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1.7;
+}
+.prose ol ol,      .prose-manuscrit ol ol      { counter-reset: prose-ol-nested; }
+.prose ol ol > li, .prose-manuscrit ol ol > li { counter-increment: prose-ol-nested; }
+.prose ol ol > li::before,
+.prose-manuscrit ol ol > li::before { content: counter(prose-ol-nested, lower-alpha) "."; }
+
+/* ── Tableaux — style tabularray / booktabs ──────────────────────────────── */
+/* Enveloppe défilable (produite par le plugin rehype-table-wrap). */
+.table-scroll { overflow-x: auto; margin: 1.5rem 0; -webkit-overflow-scrolling: touch; }
+
+/* Tableau : filets horizontaux uniquement, chiffres à chasse fixe. */
+.prose table,
+.prose-manuscrit table {
+  border-collapse: collapse;
+  width: auto;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aération ; première/dernière colonne à fleur des marges (façon @{} booktabs). */
+.prose th,        .prose td,
+.prose-manuscrit th, .prose-manuscrit td {
+  padding: 0.5em 0.9em;
+  text-align: left;                 /* l'alignement inline GFM (---:) reste prioritaire */
+  vertical-align: baseline;
+}
+.prose th:first-child,        .prose td:first-child,
+.prose-manuscrit th:first-child, .prose-manuscrit td:first-child { padding-left: 0; }
+.prose th:last-child,         .prose td:last-child,
+.prose-manuscrit th:last-child,  .prose-manuscrit td:last-child  { padding-right: 0; }
+
+/* En-tête : gras, sans fond ; toprule (épais) + midrule (fin). */
+.prose thead th,
+.prose-manuscrit thead th {
+  font-weight: 600;
+  color: var(--text);
+  border-top: 1.5px solid var(--text);      /* toprule */
+  border-bottom: 1px solid var(--border);   /* midrule */
+}
+/* bottomrule (épais) sous la dernière ligne du corps. */
+.prose tbody tr:last-child td,
+.prose-manuscrit tbody tr:last-child td {
+  border-bottom: 1.5px solid var(--text);
+}
+
+/* Filet de repli si l'alignement GFM sort en attribut align= plutôt qu'en style. */
+.prose [align="right"],  .prose-manuscrit [align="right"]  { text-align: right; }
+.prose [align="center"], .prose-manuscrit [align="center"] { text-align: center; }
+
 .prose strong { font-weight: 600; color: var(--text); }
 .prose em     { font-style: italic; }
 .prose code   { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--bg-surface); padding: 0.2em 0.45em; border-radius: 0.25rem; border: 1px solid var(--border); }
