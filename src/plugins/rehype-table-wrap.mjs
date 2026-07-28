@@ -22,7 +22,12 @@ export default function rehypeTableWrap() {
       parent.children[index] = {
         type: 'element',
         tagName: 'div',
-        properties: { className: ['table-scroll'] },
+        properties: {
+          className: ['table-scroll'],
+          tabIndex: 0,
+          role: 'region',
+          ariaLabel: 'Tableau',
+        },
         children: [node],
       };
       return SKIP; // ne pas redescendre dans le tableau déplacé

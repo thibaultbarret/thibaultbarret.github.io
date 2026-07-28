@@ -24,6 +24,12 @@ assert.ok(
   'le div doit porter la classe table-scroll'
 );
 assert.equal(wrap.children[0].tagName, 'table', 'le div enveloppe le tableau');
+assert.equal(wrap.properties.tabIndex, 0, 'wrapper focusable (tabindex=0)');
+assert.equal(wrap.properties.role, 'region', 'wrapper is a region landmark');
+assert.ok(
+  typeof wrap.properties.ariaLabel === 'string' && wrap.properties.ariaLabel.length > 0,
+  'wrapper has an aria-label'
+);
 
 // 2) laisse les autres nœuds intacts
 assert.equal(tree.children[1].tagName, 'p', 'le paragraphe reste intact');
