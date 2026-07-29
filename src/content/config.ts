@@ -33,15 +33,6 @@ const chapters = defineCollection({
     order:  z.number(),
     show:   z.boolean().default(true),
     description: z.string().optional(),
-    figures: z.array(z.object({
-      filename: z.string(),
-      title:    z.string(),
-      slug:     z.string().optional(),          // identifiant d'URL de la figure (repli sur l'index si absent)
-      image:    z.string().optional(),          // image de fond (pour figures VTK)
-      field:    z.string().optional(),          // champ scalaire à afficher
-      cmap:     z.string().default('RdYlGn_r'),
-      opacity:  z.number().default(0.8),
-    })).default([]),
   }),
 });
 

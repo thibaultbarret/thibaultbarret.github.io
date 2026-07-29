@@ -11,25 +11,15 @@ import rehypeKatex from 'rehype-katex';
 import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
 import rehypeTableWrap from '../../../plugins/rehype-table-wrap.mjs';
+import { splitBody } from '../../../lib/chapter-figures.mjs';
 
+type FigureDecl = { filename: string; title: string; slug: string };
 type Segment =
   | { type: 'text';   html: string }
-  | { type: 'figure'; index: number };
+  | { type: 'figure'; fig: FigureDecl };
 
 async function parseBody(body: string): Promise<Segment[]> {
   if (!body?.trim()) return [];
-
-  const MARKER = /<!--\s*figure:\s*(\d+)\s*-->/g;
-  const parts: { kind: 'text' | 'figure'; content: string; index?: number }[] = [];
-  let last = 0;
-  let m: RegExpExecArray | null;
-
-  while ((m = MARKER.exec(body)) !== null) {
-    if (m.index > last) parts.push({ kind: 'text', content: body.slice(last, m.index) });
-    parts.push({ kind: 'figure', content: '', index: parseInt(m[1]) });
-    last = MARKER.lastIndex;
-  }
-  if (last < body.length) parts.push({ kind: 'text', content: body.slice(last) });
 
   const processor = unified()
     .use(remarkParse)
@@ -42,9 +32,9 @@ async function parseBody(body: string): Promise<Segment[]> {
     .use(rehypeStringify);
 
   const segments: Segment[] = [];
-  for (const p of parts) {
+  for (const p of splitBody(body)) {
     if (p.kind === 'figure') {
-      segments.push({ type: 'figure', index: p.index! });
+      segments.push({ type: 'figure', fig: p.fig });
     } else {
       const html = String(await processor.process(p.content));
       if (html.trim()) segments.push({ type: 'text', html });
@@ -66,13 +56,6 @@ const { chapter, prevChapter, nextChapter } = Astro.props;
 const { chapterSlug } = Astro.params;
 
 const segments = await parseBody(chapter.body ?? '');
-
-const referencedFigs = new Set(
-  segments.filter(s => s.type === 'figure').map(s => (s as any).index)
-);
-const unrefFigs = chapter.data.figures
-  .map((fig, i) => ({ fig, i }))
-  .filter(({ i }) => !referencedFigs.has(i));
 ---
 <html lang="fr">
   <head>
@@ -108,12 +91,11 @@ const unrefFigs = chapter.data.figures
             if (seg.type === 'text') {
               return <div class="prose-manuscrit" set:html={seg.html} />;
             }
-            const fig = chapter.data.figures[seg.index];
-            if (!fig) return null;
+            const fig = seg.fig;
             return (
               <div class="my-4">
                 <a
-                  href={`/manuscrit/${chapterSlug}/${fig.slug ?? seg.index}`}
+                  href={`/manuscrit/${chapterSlug}/${fig.slug}`}
                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
                   style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
                 >
@@ -123,23 +105,6 @@ const unrefFigs = chapter.data.figures
               </div>
             );
           })}
-
-          {unrefFigs.length > 0 && (
-            <ul class="space-y-2 mt-4">
-              {unrefFigs.map(({ fig, i }) => (
-                <li>
-                  <a
-                    href={`/manuscrit/${chapterSlug}/${fig.slug ?? i}`}
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg transition-opacity hover:opacity-80"
-                    style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
-                  >
-                    <span style="color: var(--accent); font:12px monospace;">▶</span>
-                    <span class="text-sm">{fig.title}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         <!-- Navigation prev / next -->

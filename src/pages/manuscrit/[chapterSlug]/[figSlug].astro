@@ -10,18 +10,20 @@ import Plot1D from '../../../components/Plot1D.astro';
 import FieldCurve from '../../../components/FieldCurve.astro';
 import Histogram from '../../../components/Histogram.astro';
 import '../../../styles/global.css';
+import { extractFigures } from '../../../lib/chapter-figures.mjs';
 
 export async function getStaticPaths() {
   const chapters = (await getCollection('chapters')).filter(c => c.data.show);
-  return chapters.flatMap(chapter =>
-    chapter.data.figures.map((fig, i) => ({
-      params: { chapterSlug: chapter.slug, figSlug: fig.slug ?? String(i) },
-      props: { chapter, fig, figIndex: i, totalFigs: chapter.data.figures.length },
-    }))
-  );
+  return chapters.flatMap(chapter => {
+    const figs = extractFigures(chapter.body ?? '');
+    return figs.map((fig, i) => ({
+      params: { chapterSlug: chapter.slug, figSlug: fig.slug },
+      props: { chapter, fig, figIndex: i, figs },
+    }));
+  });
 }
 
-const { chapter, fig, figIndex, totalFigs } = Astro.props;
+const { chapter, fig, figIndex, figs } = Astro.props;
 const { chapterSlug } = Astro.params;
 
 const ext = fig.filename.split('.').pop();
@@ -50,8 +52,8 @@ if (ext === 'json') {
   }
 }
 
-const prevFig = figIndex > 0 ? chapter.data.figures[figIndex - 1] : null;
-const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : null;
+const prevFig = figIndex > 0 ? figs[figIndex - 1] : null;
+const nextFig = figIndex < figs.length - 1 ? figs[figIndex + 1] : null;
 ---
 <html lang="fr">
   <head>
@@ -121,7 +123,7 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
         <div class="flex justify-between mt-8">
           {prevFig ? (
             <a
-              href={`/manuscrit/${chapterSlug}/${prevFig.slug ?? figIndex - 1}`}
+              href={`/manuscrit/${chapterSlug}/${prevFig.slug}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >
@@ -130,7 +132,7 @@ const nextFig = figIndex < totalFigs - 1 ? chapter.data.figures[figIndex + 1] : 
           ) : <span />}
           {nextFig ? (
             <a
-              href={`/manuscrit/${chapterSlug}/${nextFig.slug ?? figIndex + 1}`}
+              href={`/manuscrit/${chapterSlug}/${nextFig.slug}`}
               class="flex items-center gap-2 px-4 py-2 rounded text-sm transition-opacity hover:opacity-80"
               style="border: 1px solid var(--border); background: var(--bg); color: var(--text); text-decoration: none;"
             >
