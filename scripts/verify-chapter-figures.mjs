@@ -30,4 +30,15 @@ const figs = extractFigures(body);
 assert.deepEqual(figs.map(f => f.slug), ['a', 'b']);
 assert.equal(figs[0].filename, 'a.json');
 
+// slug dupliqué dans le même chapitre -> erreur
+const bodyDup = [
+  'Intro.', '',
+  '```figure', 'filename: "a.json"', 'title: "Figure 1"', 'slug: "x"', '```', '',
+  'Milieu.', '',
+  '```figure', 'filename: "b.json"', 'title: "Figure 2"', 'slug: "x"', '```', '',
+  'Fin.',
+].join('\n');
+
+assert.throws(() => extractFigures(bodyDup), /dupliqu/);
+
 console.log('OK chapter-figures');

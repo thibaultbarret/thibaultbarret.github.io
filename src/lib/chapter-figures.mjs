@@ -43,5 +43,13 @@ export function splitBody(body) {
 
 /** @param {string} body @returns {FigureDecl[]} */
 export function extractFigures(body) {
-  return splitBody(body).filter((p) => p.kind === 'figure').map((p) => p.fig);
+  const figs = splitBody(body).filter((p) => p.kind === 'figure').map((p) => p.fig);
+  const seen = new Set();
+  for (const f of figs) {
+    if (seen.has(f.slug)) {
+      throw new Error(`Bloc figure : slug dupliqué "${f.slug}" dans le même chapitre.`);
+    }
+    seen.add(f.slug);
+  }
+  return figs;
 }
