@@ -136,23 +136,19 @@ body {
 .prose table,
 .prose-manuscrit table {
   border-collapse: collapse;
-  width: auto;
+  width: 100%;                      /* le tableau occupe toute la largeur de la page */
   color: var(--text-muted);
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
 
-/* Aération ; première/dernière colonne à fleur des marges (façon @{} booktabs). */
+/* Aération ; contenu centré dans chaque colonne. */
 .prose th,        .prose td,
 .prose-manuscrit th, .prose-manuscrit td {
   padding: 0.5em 0.9em;
-  text-align: left;                 /* l'alignement inline GFM (---:) reste prioritaire */
+  text-align: center;               /* centré par colonne ; l'alignement inline GFM (---:) reste prioritaire */
   vertical-align: baseline;
 }
-.prose th:first-child,        .prose td:first-child,
-.prose-manuscrit th:first-child, .prose-manuscrit td:first-child { padding-left: 0; }
-.prose th:last-child,         .prose td:last-child,
-.prose-manuscrit th:last-child,  .prose-manuscrit td:last-child  { padding-right: 0; }
 
 /* En-tête : gras, sans fond ; toprule (épais) + midrule (fin). */
 .prose thead th,
