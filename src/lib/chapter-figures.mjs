@@ -1,7 +1,7 @@
 import { load as loadYaml } from 'js-yaml';
 
 /** Fence ` ```figure ` en début de ligne ; capture le YAML interne. */
-const FENCE_SOURCE = String.raw`^\x60\x60\x60figure[ \t]*\r?\n([\s\S]*?)\r?\n\x60\x60\x60[ \t]*$`;
+const FENCE = /^```figure[ \t]*\r?\n([\s\S]*?)\r?\n```[ \t]*$/gm;
 
 /** @typedef {{ filename: string, title: string, slug: string }} FigureDecl */
 
@@ -29,7 +29,7 @@ export function parseFigureBlock(inner) {
  */
 export function splitBody(body) {
   const parts = [];
-  const re = new RegExp(FENCE_SOURCE, 'gm'); // fraîche : pas d'état lastIndex partagé
+  const re = new RegExp(FENCE.source, 'gm'); // fraîche : pas d'état lastIndex partagé
   let last = 0;
   let m;
   while ((m = re.exec(body)) !== null) {
