@@ -81,6 +81,8 @@ const unrefFigs = chapter.data.figures
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={chapter.data.description ?? chapter.data.title} />
     <title>Chapitre {chapter.data.order} — {chapter.data.title} — Manuscrit</title>
+    <!-- KaTeX : indispensable pour styler le math inline ($...$) rendu par rehype-katex -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   </head>
   <body>
     <Nav />
