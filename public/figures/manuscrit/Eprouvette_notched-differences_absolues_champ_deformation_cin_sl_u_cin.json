@@ -28,9 +28,10 @@
             "name": "ε_vm"
         }
     ],
+    "scale": "log",
     "cmap": "RdYlGn_r",
-    "label_format": ".5f",
-    "n_colors": 10,
+    "label_format": ".3e",
+    "n_colors": 7,
     "opacity": 0.8,
     "steps": [
         {
@@ -635,3 +636,4 @@
         }
     ]
 }
+
