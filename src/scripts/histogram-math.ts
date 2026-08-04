@@ -33,3 +33,25 @@ export function histogramCounts(values: ArrayLike<number>, edges: number[]): { c
   if (total > 0) for (let i = 0; i < n; i++) counts[i] /= total;
   return { counts };
 }
+
+// Fractions normalisées de points par intervalle de seuils :
+//   [ v < sBas , sBas <= v < sHaut , v >= sHaut ].
+// Bornes IDENTIQUES à applyThresholdLut (vtk-core.ts) : l'histogramme et la carte
+// de champ en mode `threshold` doivent classer chaque point de la même façon.
+// Non finis (NaN, ±Infinity) ignorés : ni comptés, ni au dénominateur.
+// Somme = 1, ou [0,0,0] si aucun point fini.
+export function thresholdCounts(
+  values: ArrayLike<number>, sBas: number, sHaut: number,
+): [number, number, number] {
+  let lo = 0, mid = 0, hi = 0;
+  for (let k = 0; k < values.length; k++) {
+    const v = values[k];
+    if (!isFinite(v)) continue;
+    if (v < sBas) lo++;
+    else if (v < sHaut) mid++;
+    else hi++;
+  }
+  const total = lo + mid + hi;
+  if (total === 0) return [0, 0, 0];
+  return [lo / total, mid / total, hi / total];
+}
