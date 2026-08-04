@@ -211,9 +211,9 @@ function extractSlice(npy: NpyArray, comp: number, step: number): number[] {
 const stepsOf = (n: NpyArray) => n.shape[n.shape.length - 1];
 const compsOf = (n: NpyArray) => (n.shape.length >= 3 ? n.shape[1] : 1);
 
-// Part du pas d'axe occupée par un groupe de barres ; le reste est le creux
-// entre groupes.
-const GROUP_FILL = 0.72;
+// Note : la part du pas occupée par un groupe est calculée par figure, dans
+// `initHistogramSeuils`, à partir du nombre de jeux (`groupFill`, ci-dessous) —
+// le creux entre groupes vaut toujours la largeur d'une barre.
 
 export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   const loading = el.querySelector<HTMLElement>('.hs-loading')!;
@@ -322,7 +322,7 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
           const bb = self.bbox;
           const y0 = self.valToPos(0, 'y', true);
           const pas = Math.abs(self.valToPos(1, 'x', true) - self.valToPos(0, 'x', true));
-          const groupW = pas * GROUP_FILL;
+          const groupW = pas * groupFill;
           const barW = groupW / loaded.length;
           ctx.save();
           ctx.beginPath(); ctx.rect(bb.left, bb.top, bb.width, bb.height); ctx.clip();
@@ -580,7 +580,7 @@ git commit -m "feat(histogram-seuils): composant, runtime et barres groupées"
 - Modify: `src/scripts/histogram-seuils-runtime.ts`
 
 **Interfaces:**
-- Consumes: `loaded`, `fractions`, `GROUP_FILL` et le hook `draw` de la Tâche 2 ; `renderTex`.
+- Consumes: `loaded`, `fractions`, `groupFill` et le hook `draw` de la Tâche 2 ; `renderTex`.
 - Produces: `hatchPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null` (interne) et le remplissage de `.hs-legend`, plus `dimLegend(): void` appelé par `render()` — repris en Tâche 4 après chaque changement d'instant ou de composante.
 
 - [ ] **Step 1 : Ajouter le motif de hachures**
@@ -689,7 +689,7 @@ git commit -m "feat(histogram-seuils): hachures par jeu et légende avec pastill
 - Modify: `src/scripts/histogram-seuils-runtime.ts`
 
 **Interfaces:**
-- Consumes: `currentStep`, `currentField`, `render()`, `dimLegend()`, `fractions`, `loaded`, `xLabels`, `S`, `GROUP_FILL` des tâches 2 et 3.
+- Consumes: `currentStep`, `currentField`, `render()`, `dimLegend()`, `fractions`, `loaded`, `xLabels`, `S`, `groupFill` des tâches 2 et 3.
 - Produces: rien pour d'autres tâches — c'est la dernière tâche de code.
 
 - [ ] **Step 1 : Ajouter le survol**
@@ -702,9 +702,9 @@ Ajouter un hook `setCursor` dans `opts.hooks`, à côté de `draw`. Le test d'ap
           if (left == null || top == null || left < 0) { tooltip.style.display = 'none'; return; }
           const vx = self.posToVal(left, 'x');
           const g = Math.round(vx);
-          if (g < 0 || g > 2 || Math.abs(vx - g) > GROUP_FILL / 2) { tooltip.style.display = 'none'; return; }
+          if (g < 0 || g > 2 || Math.abs(vx - g) > groupFill / 2) { tooltip.style.display = 'none'; return; }
           // Position dans le groupe → indice du jeu.
-          const frac = (vx - (g - GROUP_FILL / 2)) / GROUP_FILL;
+          const frac = (vx - (g - groupFill / 2)) / groupFill;
           const d = Math.min(loaded.length - 1, Math.max(0, Math.floor(frac * loaded.length)));
           const vy = self.posToVal(top, 'y');
           const h = fractions[d][g];
@@ -882,4 +882,4 @@ Ne pas fusionner, ne pas pousser. Annoncer : branche `feat/histogram-seuils` pr�
 
 **Placeholders.** Aucun « TODO », aucun « gérer les cas limites » : chaque étape porte son code ou sa commande, et les cinq messages d'erreur sont écrits en toutes lettres.
 
-**Cohérence des types.** `thresholdCounts` renvoie `[number, number, number]` en Tâche 1 et `fractions` est typé `[number, number, number][]` en Tâche 2. `hatchPattern(ctx)` est défini en Tâche 3 et appelé au même endroit dans le hook `draw` et dans la légende. `dimLegend()` est défini en Tâche 3 et appelé dans `render()` de la même tâche. `stopAnim()` est défini en Tâche 4 étape 3 et référencé en Tâche 4 étape 2 — hissage de déclaration de fonction, noté dans le plan. `GROUP_FILL` est une constante de module (Tâche 2), lue par le hook `draw` et par le test d'appartenance du survol (Tâche 4) : les deux géométries ne peuvent pas diverger.
+**Cohérence des types.** `thresholdCounts` renvoie `[number, number, number]` en Tâche 1 et `fractions` est typé `[number, number, number][]` en Tâche 2. `hatchPattern(ctx)` est défini en Tâche 3 et appelé au même endroit dans le hook `draw` et dans la légende. `dimLegend()` est défini en Tâche 3 et appelé dans `render()` de la même tâche. `stopAnim()` est défini en Tâche 4 étape 3 et référencé en Tâche 4 étape 2 — hissage de déclaration de fonction, noté dans le plan. `groupFill` est calculée une fois par figure dans `initHistogramSeuils` (Tâche 2, valeur `N/(N+1)`), lue par le hook `draw` et par le test d'appartenance du survol (Tâche 4) : les deux géométries ne peuvent pas diverger.

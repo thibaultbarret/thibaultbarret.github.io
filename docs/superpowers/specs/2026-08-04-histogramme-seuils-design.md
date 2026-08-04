@@ -147,8 +147,12 @@ hachuré. Des motifs nommés (`"diagonal" | "horizontal" | …`) s'ajouteront sa
 casser le booléen le jour où trois jeux devront se distinguer sans couleur.
 
 **Géométrie des marques.** Barres jointives dans un groupe, séparées par 2 px de
-fond ; creux d'un demi-pas entre groupes ; bordure 1 px comme l'histogramme
-existant. Étiquettes de groupe à la place des graduations numériques.
+fond ; bordure 1 px comme l'histogramme existant. Le **creux entre deux groupes
+vaut toujours la largeur d'une barre** : la part du pas d'axe occupée par un
+groupe est `N / (N + 1)` pour `N` jeux — 0,50 à un seul jeu, 0,67 à deux, 0,857
+à six. La règle s'adapte donc au nombre de jeux dans les deux sens : une barre
+unique ne s'élargit pas absurdement, et le creux ne se referme jamais quand les
+jeux se multiplient. Étiquettes de groupe à la place des graduations numériques.
 
 **Identité des séries.** Légende présente dès deux jeux : pastille de couleur,
 motif si hachuré, nom en encre de texte (jamais en couleur de série). L'identité
