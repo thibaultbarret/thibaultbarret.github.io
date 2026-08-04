@@ -41,6 +41,26 @@ function extractSlice(npy: NpyArray, comp: number, step: number): number[] {
 const stepsOf = (n: NpyArray) => n.shape[n.shape.length - 1];
 const compsOf = (n: NpyArray) => (n.shape.length >= 3 ? n.shape[1] : 1);
 
+// Rayures à 45°, tuile 8×8 réutilisée par toutes les barres hachurées.
+// Le motif est transparent : il se pose PAR-DESSUS le remplissage de couleur,
+// il ne le remplace pas.
+let hatchTile: HTMLCanvasElement | null = null;
+function hatchPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
+  if (!hatchTile) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 8;
+    const g = c.getContext('2d')!;
+    g.strokeStyle = 'rgba(17,17,27,0.55)';
+    g.lineWidth = 2.5;
+    g.beginPath();
+    g.moveTo(-2, 10); g.lineTo(10, -2);
+    g.moveTo(2, 14);  g.lineTo(14, 2);
+    g.stroke();
+    hatchTile = c;
+  }
+  return ctx.createPattern(hatchTile, 'repeat');
+}
+
 export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   const loading = el.querySelector<HTMLElement>('.hs-loading')!;
   const errEl   = el.querySelector<HTMLElement>('.hs-error')!;
@@ -107,6 +127,40 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
     hatch: def.hatch === true,
   }));
 
+  // Légende : pastille peinte du remplissage RÉEL (couleur + motif), nom en
+  // encre de texte — l'identité d'un jeu n'est jamais portée par la seule
+  // couleur. Une série unique n'a pas de boîte de légende.
+  const legendEl = el.querySelector<HTMLElement>('.hs-legend')!;
+  const legendItems: HTMLElement[] = [];
+  if (loaded.length > 1) {
+    loaded.forEach(l => {
+      const item = document.createElement('span');
+      item.style.cssText = 'display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;';
+      const sw = document.createElement('canvas');
+      sw.width = 14; sw.height = 14;
+      sw.style.cssText = 'width:14px;height:14px;border:1px solid #11111b;border-radius:2px;flex:none;';
+      const g = sw.getContext('2d')!;
+      g.fillStyle = l.color; g.fillRect(0, 0, 14, 14);
+      if (l.hatch) { const p = hatchPattern(g); if (p) { g.fillStyle = p; g.fillRect(0, 0, 14, 14); } }
+      const name = document.createElement('span');
+      name.style.color = '#cdd6f4';
+      renderTex(name, l.def.name, false);
+      item.append(sw, name);
+      legendEl.appendChild(item);
+      legendItems.push(item);
+    });
+    legendEl.style.display = 'flex';
+  }
+
+  // Un jeu sans aucun point fini à l'instant courant : grisé en légende plutôt
+  // que silencieusement à zéro.
+  function dimLegend() {
+    legendItems.forEach((it, i) => {
+      const vide = fractions[i][0] + fractions[i][1] + fractions[i][2] === 0;
+      it.style.opacity = vide ? '0.45' : '1';
+    });
+  }
+
   // Le creux entre deux groupes vaut toujours la largeur d'une barre : la part
   // du pas occupée par un groupe est N/(N+1). Un seul jeu → 0,5 (le demi-pas de
   // la spec) ; six jeux → 0,857, le creux ne se referme jamais.
@@ -166,6 +220,10 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
               const yT = self.valToPos(fractions[d][g], 'y', true);
               ctx.fillStyle = loaded[d].color;
               ctx.fillRect(x, yT, w, y0 - yT);
+              if (loaded[d].hatch) {
+                const p = hatchPattern(ctx);
+                if (p) { ctx.fillStyle = p; ctx.fillRect(x, yT, w, y0 - yT); }
+              }
               ctx.strokeStyle = '#11111b'; ctx.lineWidth = 1;
               ctx.strokeRect(x, yT, w, y0 - yT);
             }
@@ -179,6 +237,7 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
 
   function render() {
     fractions = loaded.map(l => thresholdCounts(extractSlice(l.npy, currentField, currentStep), sBas!, sHaut!));
+    dimLegend();
     if (!u) buildPlot(); else u.redraw();
   }
 
