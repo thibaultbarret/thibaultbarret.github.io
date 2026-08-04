@@ -16,5 +16,5 @@
         { "index": 4, "name": "\\varepsilon_{\\mathrm{2}}" },
         { "index": 5, "name": "\\varepsilon_{\\mathrm{vm}}" }
     ],
-    "y_label": "Fraction de points"
+    "y_label": "\\text{Fraction de points}"
 }

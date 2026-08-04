@@ -41,10 +41,6 @@ function extractSlice(npy: NpyArray, comp: number, step: number): number[] {
 const stepsOf = (n: NpyArray) => n.shape[n.shape.length - 1];
 const compsOf = (n: NpyArray) => (n.shape.length >= 3 ? n.shape[1] : 1);
 
-// Part du pas d'axe occupée par un groupe de barres ; le reste est le creux
-// entre groupes.
-const GROUP_FILL = 0.72;
-
 export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   const loading = el.querySelector<HTMLElement>('.hs-loading')!;
   const errEl   = el.querySelector<HTMLElement>('.hs-error')!;
@@ -111,8 +107,13 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
     hatch: def.hatch === true,
   }));
 
+  // Le creux entre deux groupes vaut toujours la largeur d'une barre : la part
+  // du pas occupée par un groupe est N/(N+1). Un seul jeu → 0,5 (le demi-pas de
+  // la spec) ; six jeux → 0,857, le creux ne se referme jamais.
+  const groupFill = loaded.length / (loaded.length + 1);
+
   // ── Étiquettes ───────────────────────────────────────────────────────────
-  const yLabel: string = cfg.y_label ?? 'Fraction de points';
+  const yLabel: string = cfg.y_label ?? '\\text{Fraction de points}';
   const fmtSeuil = (v: number) => formatValue(v, '.1e');
   const xLabels: string[] = (Array.isArray(cfg.x_labels) && cfg.x_labels.length === 3)
     ? cfg.x_labels
@@ -152,7 +153,7 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
           const bb = self.bbox;
           const y0 = self.valToPos(0, 'y', true);
           const pas = Math.abs(self.valToPos(1, 'x', true) - self.valToPos(0, 'x', true));
-          const groupW = pas * GROUP_FILL;
+          const groupW = pas * groupFill;
           const barW = groupW / loaded.length;
           ctx.save();
           ctx.beginPath(); ctx.rect(bb.left, bb.top, bb.width, bb.height); ctx.clip();
