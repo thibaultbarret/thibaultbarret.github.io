@@ -67,6 +67,7 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   const mount   = el.querySelector<HTMLElement>('.hs-uplot')!;
   const ylabelEl = el.querySelector<HTMLElement>('.hs-ylabel-inner')!;
   const ylabelCell = el.querySelector<HTMLElement>('.hs-ylabel')!;
+  const tooltip = el.querySelector<HTMLElement>('.hs-tooltip')!;
 
   const fail = (msg: string) => {
     loading.style.display = 'none';
@@ -230,6 +231,33 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
           }
           ctx.restore();
         }],
+        setCursor: [(self) => {
+          const { left, top } = self.cursor;
+          if (left == null || top == null || left < 0) { tooltip.style.display = 'none'; return; }
+          const vx = self.posToVal(left, 'x');
+          const g = Math.round(vx);
+          if (g < 0 || g > 2 || Math.abs(vx - g) > groupFill / 2) { tooltip.style.display = 'none'; return; }
+          // Position dans le groupe → indice du jeu.
+          const frac = (vx - (g - groupFill / 2)) / groupFill;
+          const d = Math.min(loaded.length - 1, Math.max(0, Math.floor(frac * loaded.length)));
+          const vy = self.posToVal(top, 'y');
+          const h = fractions[d][g];
+          if (vy < 0 || vy > h) { tooltip.style.display = 'none'; return; }
+
+          const key = `${g}|${d}`;
+          if (tooltip.dataset.key !== key) {
+            tooltip.dataset.key = key;
+            tooltip.innerHTML = '<span class="hs-tt-name"></span><br><span class="hs-tt-int"></span><br><span class="hs-tt-val"></span>';
+            renderTex(tooltip.querySelector<HTMLElement>('.hs-tt-name'), loaded[d].def.name, false);
+            tooltip.querySelector<HTMLElement>('.hs-tt-int')!.textContent = xLabels[g];
+          }
+          tooltip.querySelector<HTMLElement>('.hs-tt-val')!.textContent = `${(h * 100).toFixed(1)} %`;
+          tooltip.style.display = 'block';
+          const orect = (self as any).over.getBoundingClientRect();
+          const frect = el.getBoundingClientRect();
+          tooltip.style.left = `${orect.left - frect.left + left + 12}px`;
+          tooltip.style.top  = `${orect.top  - frect.top  + top  + 12}px`;
+        }],
       },
     };
     u = new uPlot(opts, [[0, 1, 2], [null, null, null]] as unknown as uPlot.AlignedData, mount);
@@ -242,6 +270,67 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   }
 
   new ResizeObserver(() => { if (u) u.setSize({ width: mount.clientWidth, height: mount.clientHeight }); }).observe(mount);
+
+  // Sélecteur de composante, identique aux autres figures de champ.
+  const fieldsDiv = el.querySelector<HTMLElement>('.hs-fields')!;
+  if (fieldsConfig.length > 1) {
+    fieldsDiv.style.display = 'flex';
+    fieldsConfig.forEach(({ index, name }) => {
+      const btn = document.createElement('button');
+      btn.dataset.idx = String(index);
+      renderTex(btn, name, false);
+      const active = index === currentField;
+      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active ? '#89b4fa' : '#313244'};color:${active ? '#1e1e2e' : '#cdd6f4'};`;
+      btn.addEventListener('click', () => {
+        stopAnim();
+        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
+        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
+        currentField = index;
+        render();
+      });
+      fieldsDiv.appendChild(btn);
+    });
+  }
+
+  // Barre de lecture (⏮ ⏪ ▶/⏸ ⏩ ⏭ + compteur), miroir de Histogram.astro.
+  const controls = el.querySelector<HTMLElement>('.hs-controls')!;
+  const slider   = el.querySelector<HTMLInputElement>('.hs-slider')!;
+  const datalist = el.querySelector<HTMLDataListElement>('.hs-datalist')!;
+  const label    = el.querySelector<HTMLElement>('.hs-label')!;
+  const playBtn  = el.querySelector<HTMLButtonElement>('.hs-play')!;
+  const firstBtn = el.querySelector<HTMLButtonElement>('.hs-first')!;
+  const prevBtn  = el.querySelector<HTMLButtonElement>('.hs-prev')!;
+  const nextBtn  = el.querySelector<HTMLButtonElement>('.hs-next')!;
+  const lastBtn  = el.querySelector<HTMLButtonElement>('.hs-last')!;
+  let animTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopAnim() {
+    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
+  }
+  function goTo(pos: number) {
+    currentStep = Math.max(0, Math.min(pos, S - 1));
+    label.textContent = `${currentStep + 1}/${S}`;
+    slider.value = String(currentStep);
+    render();
+  }
+
+  if (S > 1) {
+    controls.style.display = 'flex';
+    slider.max = String(S - 1);
+    const listId = 'hs-dl-' + Math.random().toString(36).slice(2);
+    datalist.id = listId; slider.setAttribute('list', listId);
+    for (let i = 0; i < S; i++) { const o = document.createElement('option'); o.value = String(i); datalist.appendChild(o); }
+    label.textContent = `1/${S}`;
+    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
+    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
+    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentStep - 1); });
+    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentStep + 1); });
+    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(S - 1); });
+    playBtn.addEventListener('click', () => {
+      if (animTimer) { stopAnim(); }
+      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentStep + 1) % S), 200); }
+    });
+  }
 
   render();
 }
