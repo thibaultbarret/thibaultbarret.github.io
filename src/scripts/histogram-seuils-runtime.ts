@@ -167,7 +167,39 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
       legendEl.appendChild(item);
       legendItems.push(item);
     });
-    legendEl.style.display = 'flex';
+    placeLegend();
+  }
+
+  // Position et colonnage de la légende. Posés par le runtime et non dans le
+  // composant : ils dépendent d'une config chargée à l'exécution (même raison
+  // que la grille de panneaux de VtkFigureCompare, cf. [BDR-023]).
+  // `legend_position: "right"` déplace la légende dans une 3e colonne de l'hôte,
+  // à côté du tracé ; le canvas se rétrécit tout seul via son ResizeObserver.
+  // `legend_columns` borné [1, nb de jeux] ; absent → une ligne repliée en bas,
+  // une colonne unique sur le côté (comportement d'origine).
+  function placeLegend() {
+    const aDroite = cfg.legend_position === 'right';
+    const brut = Number(cfg.legend_columns);
+    const cols = Number.isFinite(brut) && brut >= 1
+      ? Math.min(Math.round(brut), loaded.length)
+      : (aDroite ? 1 : 0);
+
+    const host = el.querySelector<HTMLElement>('.hs-host')!;
+    host.style.gridTemplateColumns = aDroite ? 'auto 1fr auto' : 'auto 1fr';
+    legendEl.style.gridColumn = aDroite ? '3' : '2';
+    legendEl.style.gridRow = aDroite ? '1' : '2';
+    legendEl.style.alignContent = 'center';
+    legendEl.style.justifyContent = 'center';
+    legendEl.style.margin = aDroite ? '0 0 0 10px' : '';
+
+    if (cols > 0) {
+      legendEl.style.display = 'grid';
+      legendEl.style.gridTemplateColumns = `repeat(${cols}, max-content)`;
+    } else {
+      // Bas, sans colonnage demandé : une ligne qui se replie, comme avant.
+      legendEl.style.display = 'flex';
+      legendEl.style.gridTemplateColumns = '';
+    }
   }
 
   // Un jeu sans aucun point fini à l'instant courant : grisé en légende plutôt

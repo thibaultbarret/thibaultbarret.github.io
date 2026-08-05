@@ -53,6 +53,8 @@ l'histogramme racontent la même chose.
 | `fields_config` | non | Composantes sélectionnables ; défaut `[{index:0,name:"Champ"}]` |
 | `y_label` | non | **Toujours** rendu par KaTeX en mode mathématique ; défaut `\text{Fraction de points}`. Une prose non enveloppée dans `\text{…}` s'affiche en italique de variable |
 | `x_labels` | non | Les trois étiquettes de groupe ; défaut construit à partir des seuils formatés |
+| `legend_position` | non | `"bottom"` (défaut) ou `"right"` — légende sous le tracé ou sur son flanc droit |
+| `legend_columns` | non | Nombre de colonnes de la légende, borné `[1, nb de jeux]`. Absent → une ligne repliée en bas, une colonne unique à droite |
 
 **Pourquoi `seuil_bas`/`seuil_haut` et pas `min`/`max`.** `vmin`/`vmax` existent
 déjà dans le JSON de l'histogramme classique avec un tout autre sens (cadrage de
@@ -153,6 +155,14 @@ groupe est `N / (N + 1)` pour `N` jeux — 0,50 à un seul jeu, 0,67 à deux, 0,
 à six. La règle s'adapte donc au nombre de jeux dans les deux sens : une barre
 unique ne s'élargit pas absurdement, et le creux ne se referme jamais quand les
 jeux se multiplient. Étiquettes de groupe à la place des graduations numériques.
+
+**Placement de la légende.** Sous le tracé par défaut. `legend_position: "right"`
+la déplace dans une troisième colonne de la grille hôte, à côté du tracé, et
+`legend_columns` fixe son nombre de colonnes — six entrées tiennent ainsi en 3×2
+sous le graphique, ou en 2×3 sur le flanc. La disposition est posée par le
+**runtime** et non dans le composant, parce qu'elle dépend d'une config chargée à
+l'exécution (même raison que la grille de panneaux de [BDR-023]) ; le canvas se
+redimensionne seul via son `ResizeObserver` ([LRN-021]).
 
 **Identité des séries.** Légende présente dès deux jeux : pastille de couleur,
 motif si hachuré, nom en encre de texte (jamais en couleur de série). L'identité
