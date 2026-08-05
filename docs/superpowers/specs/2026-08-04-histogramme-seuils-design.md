@@ -28,15 +28,15 @@ l'histogramme racontent la même chose.
   "seuil_haut": "5e-4",
   "datasets": [
     { "data": "/data/…/differences_absolues_deformation_cin_ef_taille_elt_1.npy",
-      "name": "taille d'élément 1", "color": "#4e87e5", "hatch": false },
+      "name": "\\text{taille d'élément 1}", "color": "#4e87e5", "hatch": false },
     { "data": "/data/…/differences_absolues_deformation_cin_ef_taille_elt_2.npy",
-      "name": "taille d'élément 2", "hatch": true }
+      "name": "\\text{taille d'élément 2}", "hatch": true }
   ],
   "fields_config": [
     { "index": 0, "name": "\\varepsilon_{\\mathrm{xx}}" },
     { "index": 1, "name": "\\varepsilon_{\\mathrm{yy}}" }
   ],
-  "y_label": "Fraction de points",
+  "y_label": "\\text{Fraction de points}",
   "x_labels": ["< seuil bas", "entre seuils", "> seuil haut"]
 }
 ```
@@ -47,11 +47,11 @@ l'histogramme racontent la même chose.
 | `seuil_bas`, `seuil_haut` | oui | Les deux bornes. Nombre **ou** chaîne (`"1e-4"`) |
 | `datasets` | oui, ≥ 1 | Liste ordonnée des jeux comparés |
 | `datasets[].data` | oui | Chemin du `.npy`, forme `(N, F, S)` ou `(N, S)` |
-| `datasets[].name` | oui | Nom affiché en légende et au survol (KaTeX accepté) |
+| `datasets[].name` | oui | Nom affiché en légende et au survol. **Toujours** rendu par KaTeX en mode mathématique (`renderTex`) : la prose doit être enveloppée dans `\text{…}`, sous peine de s'afficher en italique de variable |
 | `datasets[].color` | non | Couleur du jeu ; défaut = palette, dans l'ordre de déclaration |
 | `datasets[].hatch` | non | `true` → rayures à 45° sur les trois barres du jeu. Défaut `false` |
 | `fields_config` | non | Composantes sélectionnables ; défaut `[{index:0,name:"Champ"}]` |
-| `y_label` | non | Défaut « Fraction de points » |
+| `y_label` | non | **Toujours** rendu par KaTeX en mode mathématique ; défaut `\text{Fraction de points}`. Une prose non enveloppée dans `\text{…}` s'affiche en italique de variable |
 | `x_labels` | non | Les trois étiquettes de groupe ; défaut construit à partir des seuils formatés |
 
 **Pourquoi `seuil_bas`/`seuil_haut` et pas `min`/`max`.** `vmin`/`vmax` existent

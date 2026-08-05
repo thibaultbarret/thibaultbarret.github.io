@@ -1,6 +1,8 @@
 // scripts/verify-histogram-seuils.mjs
 // Exécuter DEPUIS la racine du projet : node scripts/verify-histogram-seuils.mjs
-// Node ≥ 22 importe directement le .ts : on teste le VRAI module, pas une réplique.
+// Exécuté sur Node 26 : import direct du .ts sans drapeau (disponible depuis
+// Node ≥ 22.18 / 23.6, au-delà du plancher `engines.node` du projet).
+// On teste le VRAI module, pas une réplique.
 import { thresholdCounts } from '../src/scripts/histogram-math.ts';
 
 const S_BAS = 2, S_HAUT = 4;

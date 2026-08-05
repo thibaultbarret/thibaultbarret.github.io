@@ -76,7 +76,11 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
     errEl.style.display = 'flex';
   };
 
-  const cfg = await fetch(el.dataset.src!).then(r => r.json());
+  const src = el.dataset.src!;
+  const cfg = await fetch(src).then(r => {
+    if (!r.ok) throw new Error(`Config introuvable : ${src} (${r.status})`);
+    return r.json();
+  });
 
   // ── Validation de la configuration ───────────────────────────────────────
   const sBas = parseBound(cfg.seuil_bas), sHaut = parseBound(cfg.seuil_haut);
@@ -108,6 +112,12 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
     return fail(e instanceof Error ? e.message : String(e));
   }
 
+  // fetchNpy ne teste pas `r.ok` : un 404 résout avec du HTML, qui ne parse pas
+  // en .npy et donne une forme vide. On rattrape ici plutôt que de laisser la
+  // suite produire un message trompeur sur une composante absente.
+  const illisible = npys.findIndex(n => n.shape.length < 2 || n.data.length === 0);
+  if (illisible >= 0) return fail(`fichier illisible ou introuvable : « ${defs[illisible].data} ».`);
+
   // ── Cohérence entre jeux ─────────────────────────────────────────────────
   const S = stepsOf(npys[0]);
   const mauvaisPas = npys.findIndex(n => stepsOf(n) !== S);
@@ -116,6 +126,9 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   }
   for (let i = 0; i < defs.length; i++) {
     for (const f of fieldsConfig) {
+      if (!Number.isInteger(f.index)) {
+        return fail(`composante mal déclarée dans fields_config : index = ${JSON.stringify(f.index)}.`);
+      }
       if (f.index >= compsOf(npys[i])) {
         return fail(`composante ${f.index} (${f.name}) absente de « ${defs[i].data} », qui n'en porte que ${compsOf(npys[i])}.`);
       }
@@ -138,11 +151,15 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
       const item = document.createElement('span');
       item.style.cssText = 'display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;';
       const sw = document.createElement('canvas');
-      sw.width = 14; sw.height = 14;
+      // uPlot dessine en pixels device ; la pastille doit suivre pour que le
+      // pas des hachures corresponde à celui des barres (pas de ctx.scale ici
+      // : c'est justement ce qui conserve le pas en pixels device).
+      const dpr = window.devicePixelRatio || 1;
+      sw.width = sw.height = Math.round(14 * dpr);
       sw.style.cssText = 'width:14px;height:14px;border:1px solid #11111b;border-radius:2px;flex:none;';
       const g = sw.getContext('2d')!;
-      g.fillStyle = l.color; g.fillRect(0, 0, 14, 14);
-      if (l.hatch) { const p = hatchPattern(g); if (p) { g.fillStyle = p; g.fillRect(0, 0, 14, 14); } }
+      g.fillStyle = l.color; g.fillRect(0, 0, sw.width, sw.height);
+      if (l.hatch) { const p = hatchPattern(g); if (p) { g.fillStyle = p; g.fillRect(0, 0, sw.width, sw.height); } }
       const name = document.createElement('span');
       name.style.color = '#cdd6f4';
       renderTex(name, l.def.name, false);
@@ -266,7 +283,13 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   function render() {
     fractions = loaded.map(l => thresholdCounts(extractSlice(l.npy, currentField, currentStep), sBas!, sHaut!));
     dimLegend();
-    if (!u) buildPlot(); else u.redraw();
+    if (!u) { buildPlot(); return; }
+    u.redraw();
+    // Les deux échelles sont constantes : uPlot ne rejoue pas le curseur de
+    // lui-même (rappel armé sous `anyChanged`). Sans ça, la bulle garderait le
+    // pourcentage de l'instant précédent pendant la lecture.
+    const { left, top } = u.cursor;
+    if (left != null && top != null && left >= 0) u.setCursor({ left, top }, true);
   }
 
   new ResizeObserver(() => { if (u) u.setSize({ width: mount.clientWidth, height: mount.clientHeight }); }).observe(mount);
