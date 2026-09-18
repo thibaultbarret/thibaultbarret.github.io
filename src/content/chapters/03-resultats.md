@@ -118,7 +118,13 @@ slug: "eprouvette-entaillee-differences-absolues-champ-deformation-calcule-par-d
 ```figure
 filename: "Eprouvette_notched-differences_absolues_champ_deformation_cin_ef_et_cin_sl_u_ef.json"
 title: "Figure 4.11 — Éprouvette entaillée - test 2"
-slug: "eprouvette-entaillee-differences-absolues-champ-deformation-calcule-par-dic-et-strainleveling-deplacement-tata"
+slug: "eprouvette-entaillee-differences-absolues-champ-deformation-calcule-par-dic-et-strainleveling-interpolation"
+```
+
+```figure
+filename: "Eprouvette_notched-Histogramme_differences_par_intervalles_par_taille_par_methode.json"
+title: "Figure 4.11 — Éprouvette entaillée - Distribution des différences aboslues "
+slug: "eprouvette-entaillee-distribution-differences-absolues-champ-deformation-calcule-par-dic-et-strainleveling-interpolation"
 ```
 
 <!-- ```figure -->
