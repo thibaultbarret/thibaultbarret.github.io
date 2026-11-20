@@ -6,6 +6,7 @@ import uPlot from 'uplot';
 import { fetchNpy, idx, formatValue, type NpyArray } from './vtk-core';
 import { binEdges, histogramCounts } from './histogram-math';
 import { renderTex } from './plot1d-runtime';
+import { loadFigureConfig } from './figure-config';
 
 type FieldDef = { index: number; name: string };
 
@@ -22,7 +23,7 @@ function extractSlice(npy: NpyArray, comp: number, step: number): number[] {
 }
 
 export async function initHistogram(el: HTMLElement): Promise<void> {
-  const cfg = await fetch(el.dataset.src!).then(r => r.json());
+  const cfg = await loadFigureConfig(el.dataset.src!);
   const fieldsConfig: FieldDef[] = (Array.isArray(cfg.fields_config) && cfg.fields_config.length > 0)
     ? cfg.fields_config
     : [{ index: 0, name: 'Champ' }];

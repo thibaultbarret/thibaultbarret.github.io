@@ -22,6 +22,7 @@ import {
   resolveStepText, limitZoomOut,
 } from './vtk-core';
 import { createPlayer } from './vtk-player';
+import { loadFigureConfig } from './figure-config';
 import type { NpyArray, RawData, StepText, ColorbarEls } from './vtk-core';
 
 type FieldDef = { index: number; name: string };
@@ -59,7 +60,7 @@ interface Panel {
 }
 
 export async function initCompare(container: HTMLElement): Promise<void> {
-  const cfg = await fetch(container.dataset.src!).then(r => r.json());
+  const cfg = await loadFigureConfig(container.dataset.src!);
 
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];

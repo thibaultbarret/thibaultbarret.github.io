@@ -2,6 +2,14 @@
 // Lit un fichier JSON de configuration et reconstruit la visualisation
 // PyVista dans le navigateur via VTK.js + parsing .npy natif.
 //
+// Format court (tous types de figure, cf. src/scripts/figure-config.ts) :
+//   "dossier":   "/data/…/Eprouvette_notched",   // chemins relatifs résolus ici ;
+//                                                // un panneau/jeu de données peut avoir le sien
+//   "coords":    "coordonnees_subsets_px.npy",   // = "/data/…/Eprouvette_notched/coordonnees_subsets_px.npy"
+//   "image_pas": "image_step_{pas+1}.png",        // image de chaque pas : {pas}, {pas+1}, ou fixe sans jeton
+//   "steps":     50                               // = pas 0 à 49 (sinon liste, ex. avec "text" par pas)
+// Un chemin commençant par « / » reste absolu (ancien format toujours accepté).
+//
 // JSON schema :
 // {
 //   "coords":        "/data/coordonnees_subsets.npy",   // (N, 2)
@@ -107,6 +115,7 @@ import vtkMouseCameraTrackballPanManipulator  from '@kitware/vtk.js/Interaction/
 import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 import { levelValue } from '../scripts/scale';
 import { createPlayer } from '../scripts/vtk-player';
+import { loadFigureConfig } from '../scripts/figure-config';
 import { limitZoomOut } from '../scripts/vtk-core';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
@@ -368,7 +377,7 @@ function drawThresholdColorbar(container: HTMLElement, name: string, sBas: numbe
 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function initVtk(container: HTMLElement) {
-  const cfg = await fetch(container.dataset.src!).then(r => r.json());
+  const cfg = await loadFigureConfig(container.dataset.src!);
 
   // Normaliser la config des champs
   type FieldDef = { index: number; name: string };

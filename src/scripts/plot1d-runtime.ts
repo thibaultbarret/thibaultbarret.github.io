@@ -3,6 +3,7 @@
 // aligne les séries sur un axe x commun, et rend un graphique uPlot thémé Catppuccin.
 import uPlot from 'uplot';
 import { fetchNpy, type NpyArray } from './vtk-core';
+import { loadFigureConfig } from './figure-config';
 import katex from 'katex';
 import katexMacros from '../katex-macros.js';
 
@@ -88,10 +89,7 @@ export function renderTex(el: HTMLElement | null, src: string | undefined, isYAx
 
 export async function initPlot1D(el: HTMLElement): Promise<void> {
   const src = el.dataset.src!;
-  const cfg = await fetch(src).then(r => {
-    if (!r.ok) throw new Error(`Config introuvable : ${src} (${r.status})`);
-    return r.json() as Promise<Plot1DConfig>;
-  });
+  const cfg = await loadFigureConfig(src) as Plot1DConfig;
   if (!Array.isArray(cfg.curves) || cfg.curves.length === 0)
     throw new Error('Aucune courbe : le champ `curves` est vide ou absent.');
 

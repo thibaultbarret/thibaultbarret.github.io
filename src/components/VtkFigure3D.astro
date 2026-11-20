@@ -68,6 +68,7 @@ import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style
 import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
 import { levelValue } from '../scripts/scale';
 import { createPlayer } from '../scripts/vtk-player';
+import { loadFigureConfig } from '../scripts/figure-config';
 import { limitZoomOut } from '../scripts/vtk-core';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
@@ -252,7 +253,7 @@ function cellsWithoutNaN(cellSrc: NpyArray, vertsPerCell: number, scalars: Array
 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function initVtk3D(container: HTMLElement) {
-  const cfg = await fetch(container.dataset.src!).then(r => r.json());
+  const cfg = await loadFigureConfig(container.dataset.src!);
 
   const hasDic   = !!cfg.dic;
   const hasFe    = !!cfg.fe;

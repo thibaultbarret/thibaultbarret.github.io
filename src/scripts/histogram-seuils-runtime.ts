@@ -9,6 +9,7 @@ import uPlot from 'uplot';
 import { fetchNpy, idx, formatValue, type NpyArray } from './vtk-core';
 import { thresholdCounts } from './histogram-math';
 import { renderTex } from './plot1d-runtime';
+import { loadFigureConfig } from './figure-config';
 
 // Palette catégorielle validée contre le fond #1e1e2e (skill dataviz) : teintes
 // Catppuccin ramenées dans la bande de luminosité du mode sombre. Ordre fixe,
@@ -77,10 +78,7 @@ export async function initHistogramSeuils(el: HTMLElement): Promise<void> {
   };
 
   const src = el.dataset.src!;
-  const cfg = await fetch(src).then(r => {
-    if (!r.ok) throw new Error(`Config introuvable : ${src} (${r.status})`);
-    return r.json();
-  });
+  const cfg = await loadFigureConfig(src);
 
   // ── Validation de la configuration ───────────────────────────────────────
   const sBas = parseBound(cfg.seuil_bas), sHaut = parseBound(cfg.seuil_haut);

@@ -21,16 +21,14 @@ import {
   limitZoomOut,
 } from './vtk-core';
 import { createPlayer } from './vtk-player';
+import { loadFigureConfig } from './figure-config';
 import type { NpyArray, RawData, ColorbarEls } from './vtk-core';
 
 type FieldDef = { index: number; name: string };
 interface StepCfg { step: number; image?: string; image_index?: number }
 
 export async function initFieldCurve(el: HTMLElement): Promise<void> {
-  const cfg = await fetch(el.dataset.src!).then(r => {
-    if (!r.ok) throw new Error(`Config introuvable : ${el.dataset.src} (${r.status})`);
-    return r.json();
-  });
+  const cfg = await loadFigureConfig(el.dataset.src!);
 
   const fieldsConfig: FieldDef[] = cfg.fields_config
     ?? [{ index: cfg.field_index ?? 0, name: cfg.field_name ?? 'Field' }];
