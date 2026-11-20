@@ -19,8 +19,9 @@ import {
   CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells, cellsWithoutNaN,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
   applyThresholdLut, drawThresholdColorbar,
-  resolveStepText,
+  resolveStepText, limitZoomOut,
 } from './vtk-core';
+import { createPlayer } from './vtk-player';
 import type { NpyArray, RawData, StepText, ColorbarEls } from './vtk-core';
 
 type FieldDef = { index: number; name: string };
@@ -52,6 +53,7 @@ interface Panel {
   raw: RawData; images: NpyArray | null;
   pd: any; pts: any; polys: any; scalarsArr: any; meshActor: any; meshMapper: any;
   bgActor: any; imgH: number; cameraInit: boolean;
+  zoom: { reset(): void; mark(): void };
   texCache: Map<string, { tex: any; w: number; h: number }>;
   tooltip: HTMLElement; textEl: HTMLElement;
 }
@@ -109,7 +111,8 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   for (const pcfg of panelsCfg) {
     // DOM du panneau : colonne [zone texte au-dessus] + [hôte de rendu]
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #45475a; border-radius:4px;';
+    wrap.className = 'field-frame'; // cadre encastré, un par panneau
+    wrap.style.cssText = 'flex:1; min-width:0; min-height:0; display:flex; flex-direction:column;';
     // Zone texte propre au panneau, au-dessus de la figure (masquée si pas de texte)
     const textEl = document.createElement('div');
     textEl.style.cssText = 'display:none; flex-shrink:0; box-sizing:border-box; overflow-y:auto; padding:10px 12px; background:rgba(24,24,37,.95); border-bottom:1px solid #45475a; color:#cdd6f4; font:12px/1.6 sans-serif;';
@@ -142,7 +145,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
     rw.setContainer(canvasEl);
     rw.resize();
     const renderer = rw.getRenderer();
-    renderer.setBackground(0.118, 0.118, 0.173);
+    renderer.setBackground(0.067, 0.067, 0.106); // #11111b, fond du cadre
     const renWin = rw.getRenderWindow();
 
     const iStyle = vtkInteractorStyleManipulator.newInstance();
@@ -181,11 +184,12 @@ export async function initCompare(container: HTMLElement): Promise<void> {
 
     const cam = renderer.getActiveCamera();
     cam.setParallelProjection(true);
+    const zoom = limitZoomOut(renderer, cam); // dé-zoom borné à MAX_ZOOM_OUT × vue de référence
 
     panels.push({
       cfg: pcfg, rw, renderer, renWin, cam, canvasEl, raw, images: imagesArr,
       pd, pts, polys, scalarsArr, meshActor, meshMapper,
-      bgActor: null, imgH: dataH, cameraInit: false,
+      bgActor: null, imgH: dataH, cameraInit: false, zoom,
       texCache: new Map(), tooltip, textEl,
     });
   }
@@ -200,7 +204,6 @@ export async function initCompare(container: HTMLElement): Promise<void> {
 
   // ── Rendu partagé ─────────────────────────────────────────────────────
   let currentStep = -1;
-  let currentFieldIdx = fieldsConfig[0].index;
 
   async function updatePanelBackground(p: Panel, st: StepCfg) {
     let texInfo: { tex: any; w: number; h: number } | null = null;
@@ -223,7 +226,7 @@ export async function initCompare(container: HTMLElement): Promise<void> {
         p.bgActor = vtkActor.newInstance(); p.bgActor.setMapper(pm);
         p.renderer.addActor(p.bgActor);
         p.cam.setPosition(w/2, h/2, 10); p.cam.setFocalPoint(w/2, h/2, 0);
-        p.cam.setViewUp(0, 1, 0); p.cam.setParallelScale(h/2);
+        p.cam.setViewUp(0, 1, 0); p.cam.setParallelScale(h/2); p.zoom.mark();
         p.cameraInit = true;
       }
       p.bgActor.getTextures().forEach((t: any) => p.bgActor.removeTexture(t));
@@ -301,80 +304,16 @@ export async function initCompare(container: HTMLElement): Promise<void> {
       if (anyText) {
         p.textEl.innerHTML = resolvePanelText(p.cfg.text, st.step, fieldIdx);
       }
-      if (!p.cameraInit) { p.renderer.resetCamera(); p.cameraInit = true; }
+      if (!p.cameraInit) { p.zoom.reset(); p.cameraInit = true; }
       p.renWin.render();
     });
 
-    currentFieldIdx = fieldIdx;
   }
 
-  // ── Contrôles (récupérés AVANT goTo pour éviter tout TDZ sur slider/label) ──
-  const controls = container.querySelector<HTMLElement>('.vtkc-controls')!;
-  const slider   = container.querySelector<HTMLInputElement>('.vtkc-slider')!;
-  const label    = container.querySelector<HTMLElement>('.vtkc-label')!;
-  const playBtn  = container.querySelector<HTMLButtonElement>('.vtkc-play')!;
-  const firstBtn = container.querySelector<HTMLButtonElement>('.vtkc-first')!;
-  const prevBtn  = container.querySelector<HTMLButtonElement>('.vtkc-prev')!;
-  const nextBtn  = container.querySelector<HTMLButtonElement>('.vtkc-next')!;
-  const lastBtn  = container.querySelector<HTMLButtonElement>('.vtkc-last')!;
-  let animTimer: ReturnType<typeof setInterval> | null = null;
-  function stopAnim() { if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; } }
-
-  const fieldsDiv = container.querySelector<HTMLElement>('.vtkc-fields')!;
-  let sliderPos = 0;
-
-  async function goTo(pos: number) {
-    sliderPos = Math.max(0, Math.min(pos, steps.length - 1));
-    const pos2 = sliderPos;                         // figé : sliderPos peut bouger pendant l'await
-    label.textContent = `${pos2 + 1}/${steps.length}`;
-    slider.value = String(pos2);
-    await render(pos2, currentFieldIdx);
-  }
-
-  // ── Sélecteur de champ partagé ────────────────────────────────────────
-  if (fieldsConfig.length > 1) {
-    fieldsDiv.style.display = 'flex';
-    fieldsConfig.forEach(({ index, name }) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.dataset.idx = String(index);
-      const active = index === fieldsConfig[0].index;
-      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
-      btn.addEventListener('click', async () => {
-        stopAnim();
-        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
-        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
-        currentFieldIdx = index;
-        await render(sliderPos, index);
-      });
-      fieldsDiv.appendChild(btn);
-    });
-  }
-
-  // ── Slider de pas partagé ─────────────────────────────────────────────
-  // La barre du bas ne contient plus que le transport : visible seulement s'il
-  // y a plusieurs pas (le sélecteur de champ est un overlay haut, indépendant).
-  const hasSteps = steps.length > 1;
-  if (hasSteps) {
-    controls.style.display = 'flex';
-    slider.max = String(steps.length - 1);
-    const datalist = container.querySelector<HTMLDataListElement>('.vtkc-datalist')!;
-    const listId = 'vtkc-dl-' + Math.random().toString(36).slice(2);
-    datalist.id = listId; slider.setAttribute('list', listId);
-    for (let i = 0; i < steps.length; i++) { const opt = document.createElement('option'); opt.value = String(i); datalist.appendChild(opt); }
-    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
-    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
-    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos - 1); });
-    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos + 1); });
-    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
-    playBtn.addEventListener('click', () => {
-      if (animTimer) stopAnim();
-      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((sliderPos + 1) % steps.length), 200); }
-    });
-  }
-
-  // ── Premier rendu ─────────────────────────────────────────────────────
-  await goTo(0);
+  // ── Barre de lecture commune + premier rendu (rejette si échec → message d'erreur) ──
+  await createPlayer(container.querySelector<HTMLElement>('.vp-bar')!, {
+    steps: steps.length, fields: fieldsConfig, render,
+  });
   container.querySelector<HTMLElement>('.vtkc-loading')!.style.display = 'none';
 
   new ResizeObserver(() => {
@@ -405,11 +344,11 @@ export async function initCompare(container: HTMLElement): Promise<void> {
   panels.forEach(p => { p.cam.onModified(() => syncFrom(p)); });
 
   const linkBtn = container.querySelector<HTMLButtonElement>('.vtkc-link')!;
-  linkBtn.style.display = 'block';
   function refreshLinkBtn() {
-    linkBtn.textContent = camerasLinked ? '🔗' : '🚫';
-    linkBtn.style.background = camerasLinked ? '#89b4fa' : '#313244';
-    linkBtn.title = camerasLinked ? 'Caméras liées (cliquer pour délier)' : 'Caméras déliées (cliquer pour lier)';
+    const label = camerasLinked ? 'Caméras liées (cliquer pour délier)' : 'Caméras déliées (cliquer pour lier)';
+    linkBtn.setAttribute('aria-pressed', String(camerasLinked));
+    linkBtn.setAttribute('aria-label', label);
+    linkBtn.title = label;
   }
   refreshLinkBtn();
   linkBtn.addEventListener('click', () => {
@@ -420,10 +359,9 @@ export async function initCompare(container: HTMLElement): Promise<void> {
 
   // ── Bouton reset (tous les panneaux) ──────────────────────────────────
   const resetBtn = container.querySelector<HTMLButtonElement>('.vtkc-reset')!;
-  resetBtn.style.display = 'block';
   resetBtn.addEventListener('click', () => {
     syncing = true; // éviter la cascade pendant le reset groupé
-    panels.forEach(p => { p.renderer.resetCamera(); p.renWin.render(); });
+    panels.forEach(p => { p.zoom.reset(); p.renWin.render(); });
     syncing = false;
     // En mode lié, réaligner toutes les caméras sur le 1er panneau pour que
     // l'état après reset soit cohérent immédiatement (et pas seulement au 1er drag).

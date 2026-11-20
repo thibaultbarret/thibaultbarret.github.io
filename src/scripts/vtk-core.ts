@@ -8,6 +8,7 @@ import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
 import type vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 import { levelValue } from './scale';
 export { levelValue } from './scale';
+import { clampZoomOut } from './player-core';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 export const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -294,4 +295,56 @@ export function drawThresholdColorbar(
     s.textContent = formatValue(v, labelFmt);
     labels.appendChild(s);
   }
+}
+
+// ── Limite du dé-zoom ─────────────────────────────────────────────────────
+// La caméra ne recule pas au-delà de MAX_ZOOM_OUT × la vue de référence
+// (relevée par reset() ou mark()). Parallèle : parallelScale ; perspective :
+// distance caméra–point focal. Ne touche la caméra que si la borne est dépassée,
+// donc pas de boucle avec onModified ni avec la synchronisation des caméras liées.
+interface ZoomCamera {
+  getParallelProjection(): boolean;
+  getParallelScale(): number; setParallelScale(s: number): void;
+  getDistance(): number;
+  getFocalPoint(): number[]; getDirectionOfProjection(): number[];
+  setPosition(x: number, y: number, z: number): void;
+  onModified(cb: () => void): unknown;
+}
+interface ZoomRenderer { resetCamera(): void; resetCameraClippingRange(): void }
+
+const ZOOM_TOLERANCE = 1e-9;
+
+export function limitZoomOut(renderer: ZoomRenderer, cam: ZoomCamera): { reset(): void; mark(): void } {
+  let refScale = 0;
+  let refDistance = 0;
+  let resetting = false; // resetCamera peut dépasser l'ancienne borne : on ne borne pas pendant
+  const mark = () => { refScale = cam.getParallelScale(); refDistance = cam.getDistance(); };
+
+  cam.onModified(() => {
+    if (resetting) return;
+    if (cam.getParallelProjection()) {
+      if (!(refScale > 0)) return;
+      const s = cam.getParallelScale();
+      const bounded = clampZoomOut(s, refScale);
+      if (s > bounded * (1 + ZOOM_TOLERANCE)) cam.setParallelScale(bounded);
+      return;
+    }
+    if (!(refDistance > 0)) return;
+    const d = cam.getDistance();
+    const bounded = clampZoomOut(d, refDistance);
+    if (d <= bounded * (1 + ZOOM_TOLERANCE)) return;
+    const [fx, fy, fz] = cam.getFocalPoint();
+    const [dx, dy, dz] = cam.getDirectionOfProjection();
+    cam.setPosition(fx - dx * bounded, fy - dy * bounded, fz - dz * bounded);
+    renderer.resetCameraClippingRange();
+  });
+
+  return {
+    reset() {
+      resetting = true;
+      try { renderer.resetCamera(); } finally { resetting = false; }
+      mark();
+    },
+    mark,
+  };
 }

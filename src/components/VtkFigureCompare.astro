@@ -5,6 +5,8 @@
 //     fields_config | field_index/field_name, steps[],
 //     panels: [ { title, coords, triangles, fields, displacements?, images?|image? } ] }
 //   columns?: nombre de colonnes de la grille de panneaux (défaut : tout sur une ligne)
+import VtkPlayerBar from './VtkPlayerBar.astro';
+
 interface Props { src: string; height?: number | string; }
 const { src, height = 450 } = Astro.props;
 const heightCss = typeof height === 'string' ? height : `${height}px`;
@@ -13,15 +15,12 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 <div
   class="vtkc-figure"
   data-src={src}
-  style={`height:${heightCss}; display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem; position:relative;`}
+  style={`height:${heightCss}; box-sizing:border-box; padding:12px; display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem; position:relative;`}
 >
   <!-- Spinner -->
   <div class="vtkc-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;">
     <span style="color:#a6adc8;font:12px monospace;">Chargement…</span>
   </div>
-
-  <!-- Sélecteur de champ partagé (barre en haut, pleine largeur) -->
-  <div class="vtkc-fields" style="display:none;padding:6px 10px;background:transparent;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;flex-shrink:0;"></div>
 
   <!-- Zone haute : panneaux (texte propre intégré) + colorbar -->
   <div style="flex:1; display:flex; overflow:hidden; position:relative; min-height:0;">
@@ -32,10 +31,6 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Overlay d'erreur (échelle log impossible : valeurs <= 0) -->
     <div class="vtkc-log-error" style="display:none;position:absolute;inset:0;z-index:15;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
 
-    <!-- Boutons globaux (bas-gauche, sur les panneaux) -->
-    <button class="vtkc-link"  title="Lier / délier les caméras" style="display:none;position:absolute;bottom:10px;left:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:12;">🔗</button>
-    <button class="vtkc-reset" title="Réinitialiser la vue"      style="display:none;position:absolute;bottom:10px;left:46px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:12;">⟳</button>
-
     <!-- Colorbar partagée : labels à GAUCHE du canvas -->
     <div class="vtkc-cb" style="position:relative; width:104px; flex-shrink:0;">
       <span   class="vtkc-cb-title"  style="position:absolute;left:68px;top:50%;transform:translate(-50%,-172px);color:#cdd6f4;font:12px monospace;white-space:nowrap;pointer-events:none;"></span>
@@ -45,17 +40,15 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 
   </div>
 
-  <!-- Barre slider partagée (bas) -->
-  <div class="vtkc-controls" style="display:none;padding:8px 12px;background:rgba(24,24,37,.85);align-items:center;gap:6px;flex-shrink:0;">
-    <button class="vtkc-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
-    <button class="vtkc-prev"  title="Pas précédent" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏪</button>
-    <button class="vtkc-play"  title="Lecture"       style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">▶</button>
-    <button class="vtkc-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
-    <button class="vtkc-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
-    <input  class="vtkc-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
-    <datalist class="vtkc-datalist"></datalist>
-    <span   class="vtkc-label"  style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
-  </div>
+  <!-- Barre de lecture commune (hors des conteneurs vtk) -->
+  <VtkPlayerBar>
+    <button type="button" class="vp-btn vtkc-link" aria-pressed="true" aria-label="Caméras liées (cliquer pour délier)" title="Caméras liées (cliquer pour délier)">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+    </button>
+    <button type="button" class="vp-btn vtkc-reset" aria-label="Réinitialiser la vue" title="Réinitialiser la vue">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+    </button>
+  </VtkPlayerBar>
 </div>
 
 <script>

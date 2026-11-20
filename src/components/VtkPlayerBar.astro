@@ -1,0 +1,108 @@
+---
+// Barre de lecture commune des figures de champ
+// (spec : docs/superpowers/specs/2026-11-20-vtk-player-design.md).
+// Comportement : src/scripts/vtk-player.ts (createPlayer).
+// Les boutons de vue (⟳, vue parallèle, lien) passent par le slot, avec la classe `vp-btn`.
+// À placer HORS du conteneur vtk : vtk.js capture le pointeur de son conteneur.
+---
+<div class="vp-bar">
+  <select class="vp-field" aria-label="Composante du champ" hidden></select>
+  <div class="vp-transport">
+    <button type="button" class="vp-btn vp-first" aria-label="Premier pas" title="Premier pas">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M18 6l-8 6 8 6z"/></svg>
+    </button>
+    <button type="button" class="vp-btn vp-prev" aria-label="Pas précédent" title="Pas précédent">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <button type="button" class="vp-btn vp-play" aria-label="Lecture" title="Lecture" aria-pressed="false">
+      <svg class="vp-icon vp-fill vp-i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+      <svg class="vp-icon vp-fill vp-i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg>
+    </button>
+    <button type="button" class="vp-btn vp-next" aria-label="Pas suivant" title="Pas suivant">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <button type="button" class="vp-btn vp-last" aria-label="Dernier pas" title="Dernier pas">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14M6 6l8 6-8 6z"/></svg>
+    </button>
+  </div>
+  <input class="vp-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Pas de temps" />
+  <span class="vp-count">1 / 1</span>
+  <div class="vp-views"><slot /></div>
+</div>
+
+<style is:global>
+  .vp-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px;
+    margin-top: 10px; color: #a6adc8;
+    font: 12px ui-sans-serif, system-ui, sans-serif;
+  }
+  .vp-bar [hidden] { display: none !important; }
+  .vp-transport, .vp-views { display: flex; align-items: center; gap: 2px; }
+  .vp-views { margin-left: auto; }
+
+  .vp-btn {
+    width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; color: #a6adc8; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .vp-btn:hover { background: #313244; color: #cdd6f4; }
+  .vp-btn[aria-pressed="true"]:not(.vp-play) { color: #89b4fa; }
+  .vp-btn:focus-visible, .vp-field:focus-visible, .vp-slider:focus-visible {
+    outline: 2px solid #89b4fa; outline-offset: 1px;
+  }
+
+  .vp-play { width: 36px; height: 36px; border-radius: 50%; background: #89b4fa; color: #11111b; }
+  .vp-play:hover { background: #b4cefc; color: #11111b; }
+  .vp-play .vp-i-pause, .vp-play[aria-pressed="true"] .vp-i-play { display: none; }
+  .vp-play[aria-pressed="true"] .vp-i-pause { display: block; }
+
+  .vp-icon {
+    width: 16px; height: 16px; fill: none; stroke: currentColor;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .vp-icon.vp-fill { fill: currentColor; stroke: none; }
+
+  .vp-slider {
+    flex: 1 1 120px; min-width: 80px; height: 4px; margin: 0 8px;
+    -webkit-appearance: none; appearance: none; border-radius: 2px; cursor: pointer;
+    background: linear-gradient(to right, #89b4fa 0 var(--p, 0%), #45475a var(--p, 0%) 100%);
+  }
+  .vp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: #cdd6f4; border: 3px solid #89b4fa; box-shadow: 0 0 0 4px rgba(137,180,250,.15);
+  }
+  .vp-slider::-moz-range-track { background: transparent; }
+  .vp-slider::-moz-range-thumb {
+    width: 8px; height: 8px; border-radius: 50%; background: #cdd6f4; border: 3px solid #89b4fa;
+  }
+
+  .vp-count {
+    min-width: 52px; text-align: right;
+    font: 11px ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  }
+
+  .vp-field {
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    padding: 6px 28px 6px 10px; border: 1px solid #313244; border-radius: 8px;
+    color: #cdd6f4; font: 12px ui-sans-serif, system-ui, sans-serif;
+    background-color: #181825;
+    background-image: linear-gradient(45deg, transparent 50%, #a6adc8 50%),
+                      linear-gradient(135deg, #a6adc8 50%, transparent 50%);
+    background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+    background-size: 5px 5px; background-repeat: no-repeat;
+  }
+  .vp-field:hover { border-color: #45475a; }
+
+  /* Écran étroit : le slider passe seul sur une seconde ligne, pleine largeur. */
+  @media (max-width: 480px) {
+    .vp-slider { order: 10; flex-basis: 100%; margin: 8px 4px 4px; }
+  }
+
+  /* Cadre encastré de la zone du champ (un par vue vtk). */
+  .field-frame {
+    position: relative; overflow: hidden; background: #11111b;
+    border: 1px solid #45475a; border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+  }
+</style>

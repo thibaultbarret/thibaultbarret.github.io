@@ -37,6 +37,8 @@
 //   ]
 // }
 
+import VtkPlayerBar from './VtkPlayerBar.astro';
+
 interface Props { src: string; height?: number | string; }
 const { src, height = 450 } = Astro.props;
 const heightCss = typeof height === 'string' ? height : `${height}px`;
@@ -45,9 +47,10 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 <div
   class="vtk-figure"
   data-src={src}
-  style={`display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem;`}
+  style={`display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem; padding:12px;`}
 >
-  <!-- Zone de rendu VTK -->
+  <!-- Cadre encastré : seulement des surimpressions non interactives (vtk.js capture le pointeur du conteneur) -->
+  <div class="field-frame">
   <div class="vtk-canvas" style={`height:${heightCss}; width:100%; position:relative; overflow:hidden;`}>
 
     <!-- Spinner -->
@@ -58,36 +61,28 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <!-- Overlay d'erreur : échelle log impossible (valeurs ≤ 0) -->
     <div class="vtk-log-error" style="display:none;position:absolute;inset:0;z-index:25;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
 
-    <!-- Sélecteur de champ (plusieurs champs) -->
-    <div class="vtk-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
 
     <!-- Colorbar : canvas et titre positionnés séparément pour alignement parfait -->
     <canvas class="vtk-cb-canvas" width="20" height="300" style="position:absolute;right:44px;top:50%;transform:translateY(-150px);border-radius:3px;border:1px solid #45475a;pointer-events:none;z-index:10;display:block;"></canvas>
     <span   class="vtk-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-172px);color:#cdd6f4;font:12px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
     <div    class="vtk-cb-labels" style="position:absolute;right:68px;top:50%;transform:translateY(-150px);height:300px;pointer-events:none;z-index:10;"></div>
 
-    <!-- Bouton reset vue -->
-    <button class="vtk-reset" title="Réinitialiser la vue" style="display:none;position:absolute;bottom:10px;right:10px;background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;z-index:10;">⟳</button>
 
     <!-- Tooltip valeur scalaire -->
     <div class="vtk-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
 
-    <!-- Contrôles slider -->
-    <div class="vtk-controls" style="display:none;position:absolute;bottom:0;left:0;right:90px;padding:8px 12px;background:rgba(24,24,37,.85);z-index:10;align-items:center;gap:6px;">
-      <button class="vtk-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
-      <button class="vtk-prev"  title="Pas précédent" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏪</button>
-      <button class="vtk-play"  title="Lecture"       style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">▶</button>
-      <button class="vtk-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
-      <button class="vtk-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
-      <input  class="vtk-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
-      <datalist class="vtk-datalist"></datalist>
-      <span   class="vtk-label"  style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
-    </div>
 
   </div><!-- /.vtk-canvas -->
+  </div><!-- /.field-frame -->
+
+  <VtkPlayerBar>
+    <button type="button" class="vp-btn vtk-reset" aria-label="Réinitialiser la vue" title="Réinitialiser la vue">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+    </button>
+  </VtkPlayerBar>
 
   <!-- Panneau texte (visible si au moins un pas a du texte) -->
-  <div class="vtk-text-panel" style="display:none;width:100%;box-sizing:border-box;padding:20px 18px;background:rgba(24,24,37,.95);border-top:1px solid #45475a;">
+  <div class="vtk-text-panel" style="display:none;width:100%;box-sizing:border-box;margin-top:10px;padding:20px 18px;background:rgba(24,24,37,.95);border-top:1px solid #45475a;">
     <div class="vtk-text-content" style="color:#cdd6f4;font:13px/1.75 sans-serif;"></div>
   </div>
 
@@ -111,6 +106,8 @@ import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/Poi
 import vtkMouseCameraTrackballPanManipulator  from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
 import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 import { levelValue } from '../scripts/scale';
+import { createPlayer } from '../scripts/vtk-player';
+import { limitZoomOut } from '../scripts/vtk-core';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -419,7 +416,7 @@ async function initVtk(container: HTMLElement) {
   rw.setContainer(canvasEl);
   rw.resize();
   const renderer = rw.getRenderer();
-  renderer.setBackground(0.118, 0.118, 0.173);
+  renderer.setBackground(0.067, 0.067, 0.106); // #11111b, fond du cadre
   const renWin = rw.getRenderWindow();
 
   // Interaction 2D : pan + zoom seulement, pas de rotation
@@ -492,6 +489,7 @@ async function initVtk(container: HTMLElement) {
 
   const cam = renderer.getActiveCamera();
   cam.setParallelProjection(true);
+  const zoom = limitZoomOut(renderer, cam); // dé-zoom borné à MAX_ZOOM_OUT × vue de référence
 
   // ── Rendu (mis à jour par step ET par champ) ──────────────────────────
   let currentStep = -1;
@@ -522,7 +520,7 @@ async function initVtk(container: HTMLElement) {
         bgActor = vtkActor.newInstance(); bgActor.setMapper(pm);
         renderer.addActor(bgActor);
         cam.setPosition(w/2,h/2,10); cam.setFocalPoint(w/2,h/2,0);
-        cam.setViewUp(0,1,0); cam.setParallelScale(h/2);
+        cam.setViewUp(0,1,0); cam.setParallelScale(h/2); zoom.mark();
         cameraInit = true;
       }
       bgActor.getTextures().forEach((t: any) => bgActor.removeTexture(t));
@@ -582,7 +580,7 @@ async function initVtk(container: HTMLElement) {
 
     // Cadrage caméra si aucune image n'a encore positionné la vue (figure sans fond)
     if (!cameraInit) {
-      renderer.resetCamera();
+      zoom.reset();
       cameraInit = true;
     }
 
@@ -593,79 +591,9 @@ async function initVtk(container: HTMLElement) {
     if (nextImage && !texCache.has(nextImage)) toTexture(nextImage).then(t => texCache.set(nextImage, t));
   }
 
-  // ── Sélecteur de champs ───────────────────────────────────────────────
-  const fieldsDiv = container.querySelector<HTMLElement>('.vtk-fields')!;
-  if (fieldsConfig.length > 1) {
-    fieldsDiv.style.display = 'flex';
-    fieldsConfig.forEach(({ index, name }) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.dataset.idx = String(index);
-      const active = index === fieldsConfig[0].index;
-      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
-      btn.addEventListener('click', async () => {
-        fieldsDiv.querySelectorAll('button').forEach(b => {
-          b.style.background = '#313244'; b.style.color = '#cdd6f4';
-        });
-        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
-        await render(currentSliderPos, index);
-      });
-      fieldsDiv.appendChild(btn);
-    });
-  }
-
-  // ── Slider de pas ────────────────────────────────────────────────────
-  const controls  = container.querySelector<HTMLElement>('.vtk-controls')!;
-  const slider    = container.querySelector<HTMLInputElement>('.vtk-slider')!;
-  const label     = container.querySelector<HTMLElement>('.vtk-label')!;
-  const playBtn   = container.querySelector<HTMLButtonElement>('.vtk-play')!;
-  const firstBtn  = container.querySelector<HTMLButtonElement>('.vtk-first')!;
-  const prevBtn   = container.querySelector<HTMLButtonElement>('.vtk-prev')!;
-  const nextBtn   = container.querySelector<HTMLButtonElement>('.vtk-next')!;
-  const lastBtn   = container.querySelector<HTMLButtonElement>('.vtk-last')!;
-  let currentSliderPos = 0;
-  let animTimer: ReturnType<typeof setInterval> | null = null;
-
-  function stopAnim() {
-    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
-  }
-
-  async function goTo(pos: number) {
-    currentSliderPos = Math.max(0, Math.min(pos, steps.length - 1));
-    label.textContent = `${currentSliderPos + 1}/${steps.length}`;
-    slider.value = String(currentSliderPos);
-    await render(currentSliderPos, currentFieldIdx);
-  }
-
-  if (steps.length > 1) {
-    controls.style.display = 'flex';
-    slider.max = String(steps.length - 1);
-    // Graduations
-    const datalist = container.querySelector<HTMLDataListElement>('.vtk-datalist')!;
-    const listId = 'vtk-dl-' + Math.random().toString(36).slice(2);
-    datalist.id = listId;
-    slider.setAttribute('list', listId);
-    for (let i = 0; i < steps.length; i++) {
-      const opt = document.createElement('option');
-      opt.value = String(i);
-      datalist.appendChild(opt);
-    }
-    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
-    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
-    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos - 1); });
-    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos + 1); });
-    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
-    playBtn.addEventListener('click', () => {
-      if (animTimer) { stopAnim(); }
-      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentSliderPos + 1) % steps.length), 200); }
-    });
-  }
-
   // ── Bouton reset vue ──────────────────────────────────────────────────
-  const resetBtn = container.querySelector<HTMLButtonElement>('.vtk-reset')!;
-  resetBtn.style.display = 'block';
-  resetBtn.addEventListener('click', () => {
-    renderer.resetCamera();
+  container.querySelector<HTMLButtonElement>('.vtk-reset')!.addEventListener('click', () => {
+    zoom.reset();
     renWin.render();
   });
 
@@ -698,8 +626,9 @@ async function initVtk(container: HTMLElement) {
     tooltip.style.display = 'none';
   });
 
-  // ── Premier rendu — démarre au premier pas ────────────────────────────
-  await goTo(0);
+  // ── Barre de lecture commune + premier rendu (rejette si échec → showError) ──
+  const bar = container.querySelector<HTMLElement>('.vp-bar')!;
+  await createPlayer(bar, { steps: steps.length, fields: fieldsConfig, render });
   container.querySelector<HTMLElement>('.vtk-loading')!.style.display = 'none';
   new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
 }

@@ -1,4 +1,6 @@
 ---
+import VtkPlayerBar from './VtkPlayerBar.astro';
+
 interface Props { src: string; height?: number | string; }
 const { src, height = 500 } = Astro.props;
 const heightCss = typeof height === 'string' ? height : `${height}px`;
@@ -7,8 +9,10 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 <div
   class="vtk3d-figure"
   data-src={src}
-  style={`display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem;`}
+  style={`display:flex; flex-direction:column; overflow:hidden; background:#1e1e2e; border-radius:0.25rem; padding:12px;`}
 >
+  <!-- Cadre encastré : seulement des surimpressions non interactives (vtk.js capture le pointeur du conteneur) -->
+  <div class="field-frame">
   <div class="vtk3d-canvas" style={`height:${heightCss}; width:100%; position:relative; overflow:hidden;`}>
 
     <div class="vtk3d-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;">
@@ -17,17 +21,10 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
 
     <div class="vtk3d-log-error" style="display:none;position:absolute;inset:0;z-index:25;background:#1e1e2e;color:#f38ba8;font:13px/1.5 system-ui,sans-serif;padding:1.5rem;align-items:center;justify-content:center;text-align:center;"></div>
 
-    <!-- Sélecteur de champ (mode maillage unique, plusieurs champs) -->
-    <div class="vtk3d-fields" style="display:none;position:absolute;top:10px;right:10px;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:10;"></div>
 
     <!-- Légende double maillage -->
     <div class="vtk3d-legend" style="display:none;position:absolute;top:10px;left:10px;flex-direction:column;gap:6px;z-index:10;padding:8px 10px;background:rgba(24,24,37,.85);border-radius:4px;border:1px solid #45475a;"></div>
 
-    <!-- Boutons de vue (bas droite) -->
-    <div class="vtk3d-view-btns" style="display:none;position:absolute;bottom:10px;right:10px;z-index:10;display:flex;gap:4px;">
-      <button class="vtk3d-parallel" title="Vue parallèle (face)" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:28px;height:28px;cursor:pointer;padding:0;">⊡</button>
-      <button class="vtk3d-reset"    title="Réinitialiser la vue"  style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:13px;width:28px;height:28px;cursor:pointer;padding:0;">⟳</button>
-    </div>
 
     <!-- Tooltip valeur scalaire -->
     <div class="vtk3d-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:30;background:rgba(24,24,37,.92);border:1px solid #45475a;border-radius:4px;padding:3px 7px;color:#cdd6f4;font:11px monospace;white-space:nowrap;"></div>
@@ -37,22 +34,21 @@ const heightCss = typeof height === 'string' ? height : `${height}px`;
     <span   class="vtk3d-cb-title"  style="position:absolute;right:20px;top:50%;transform:translateY(-172px);color:#cdd6f4;font:12px monospace;white-space:nowrap;pointer-events:none;z-index:10;"></span>
     <div    class="vtk3d-cb-labels" style="position:absolute;right:68px;top:50%;transform:translateY(-150px);height:300px;pointer-events:none;z-index:10;"></div>
 
-    <!-- Contrôles slider -->
-    <div class="vtk3d-controls" style="display:none;position:absolute;bottom:0;left:0;right:90px;padding:8px 12px;background:rgba(24,24,37,.85);z-index:10;align-items:center;gap:6px;">
-      <button class="vtk3d-first" title="Premier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏮</button>
-      <button class="vtk3d-prev"  title="Pas précédent" style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏪</button>
-      <button class="vtk3d-play"  title="Lecture"       style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">▶</button>
-      <button class="vtk3d-next"  title="Pas suivant"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏩</button>
-      <button class="vtk3d-last"  title="Dernier pas"   style="background:#313244;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;font-size:11px;width:24px;height:24px;cursor:pointer;padding:0;">⏭</button>
-      <input  class="vtk3d-slider" type="range" min="0" max="0" step="1" value="0" style="flex:1;accent-color:#89b4fa;height:4px;" />
-      <datalist class="vtk3d-datalist"></datalist>
-      <span   class="vtk3d-label"  style="color:#a6adc8;font:10px monospace;white-space:nowrap;">1/1</span>
-    </div>
 
   </div>
+  </div><!-- /.field-frame -->
+
+  <VtkPlayerBar>
+    <button type="button" class="vp-btn vtk3d-parallel" aria-label="Vue parallèle (face)" title="Vue parallèle (face)">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    </button>
+    <button type="button" class="vp-btn vtk3d-reset" aria-label="Réinitialiser la vue" title="Réinitialiser la vue">
+      <svg class="vp-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+    </button>
+  </VtkPlayerBar>
 
   <!-- Panneau texte -->
-  <div class="vtk3d-text-panel" style="display:none;width:100%;box-sizing:border-box;padding:20px 18px;background:rgba(24,24,37,.95);border-top:1px solid #45475a;">
+  <div class="vtk3d-text-panel" style="display:none;width:100%;box-sizing:border-box;margin-top:10px;padding:20px 18px;background:rgba(24,24,37,.95);border-top:1px solid #45475a;">
     <div class="vtk3d-text-content" style="color:#cdd6f4;font:13px/1.75 sans-serif;"></div>
   </div>
 
@@ -71,6 +67,8 @@ import vtkCellArray                     from '@kitware/vtk.js/Common/Core/CellAr
 import vtkInteractorStyleTrackballCamera from '@kitware/vtk.js/Interaction/Style/InteractorStyleTrackballCamera';
 import vtkPointPicker                   from '@kitware/vtk.js/Rendering/Core/PointPicker';
 import { levelValue } from '../scripts/scale';
+import { createPlayer } from '../scripts/vtk-player';
+import { limitZoomOut } from '../scripts/vtk-core';
 
 // ── Colormaps ─────────────────────────────────────────────────────────────
 const CMAPS: Record<string, [number,number,number,number][]> = {
@@ -299,12 +297,13 @@ async function initVtk3D(container: HTMLElement) {
   rw.setContainer(canvasEl);
   rw.resize();
   const renderer = rw.getRenderer();
-  renderer.setBackground(0.118, 0.118, 0.173);
+  renderer.setBackground(0.067, 0.067, 0.106); // #11111b, fond du cadre
   const renWin = rw.getRenderWindow();
 
   // Caméra : convention DIC (Y vers le bas, regarde vers +Z)
   const cam = renderer.getActiveCamera();
   cam.setViewUp(0, -1, 0);
+  const zoom = limitZoomOut(renderer, cam); // dé-zoom borné à MAX_ZOOM_OUT × vue de référence
   rw.getInteractor().setInteractorStyle(vtkInteractorStyleTrackballCamera.newInstance());
 
   // ── PolyData + acteurs ────────────────────────────────────────────────
@@ -401,31 +400,9 @@ async function initVtk3D(container: HTMLElement) {
     });
   }
 
-  // ── Sélecteur de champs ───────────────────────────────────────────────
   let currentFieldIdx = fieldsConfig[0].index;
-  const fieldsDiv = container.querySelector<HTMLElement>('.vtk3d-fields')!;
-  if (hasSca && fieldsConfig.length > 1) {
-    fieldsDiv.style.display = 'flex';
-    fieldsConfig.forEach(({ index, name }) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.dataset.idx = String(index);
-      const active = index === fieldsConfig[0].index;
-      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
-      btn.addEventListener('click', async () => {
-        fieldsDiv.querySelectorAll('button').forEach(b => {
-          (b as HTMLElement).style.background = '#313244';
-          (b as HTMLElement).style.color = '#cdd6f4';
-        });
-        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
-        await render(currentSliderPos, index);
-      });
-      fieldsDiv.appendChild(btn);
-    });
-  }
 
   // ── Rendu ─────────────────────────────────────────────────────────────
-  let currentSliderPos = 0;
   let lastStepIdx = -1;
 
   async function render(stepPos: number, fieldIdx: number) {
@@ -466,69 +443,26 @@ async function initVtk3D(container: HTMLElement) {
     }
 
     if (hasText) textContent.innerHTML = resolveStepText(steps[stepPos]?.text, fieldIdx);
-    if (positionsChanged) { renderer.resetCamera(); lastStepIdx = stepIdx; }
+    if (positionsChanged) { zoom.reset(); lastStepIdx = stepIdx; }
     renWin.render();
   }
 
-  // ── Slider ────────────────────────────────────────────────────────────
-  const controls = container.querySelector<HTMLElement>('.vtk3d-controls')!;
-  const slider   = container.querySelector<HTMLInputElement>('.vtk3d-slider')!;
-  const labelEl  = container.querySelector<HTMLElement>('.vtk3d-label')!;
-  const playBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-play')!;
-  const firstBtn = container.querySelector<HTMLButtonElement>('.vtk3d-first')!;
-  const prevBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-prev')!;
-  const nextBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-next')!;
-  const lastBtn  = container.querySelector<HTMLButtonElement>('.vtk3d-last')!;
-  let animTimer: ReturnType<typeof setInterval> | null = null;
-
-  function stopAnim() {
-    if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; }
-  }
-
-  async function goTo(pos: number) {
-    currentSliderPos = Math.max(0, Math.min(pos, steps.length - 1));
-    labelEl.textContent = `${currentSliderPos + 1}/${steps.length}`;
-    slider.value = String(currentSliderPos);
-    await render(currentSliderPos, currentFieldIdx);
-  }
-
-  if (steps.length > 1) {
-    controls.style.display = 'flex';
-    slider.max = String(steps.length - 1);
-    // Graduations
-    const datalist = container.querySelector<HTMLDataListElement>('.vtk3d-datalist')!;
-    const listId = 'vtk3d-dl-' + Math.random().toString(36).slice(2);
-    datalist.id = listId;
-    slider.setAttribute('list', listId);
-    for (let i = 0; i < steps.length; i++) {
-      const opt = document.createElement('option');
-      opt.value = String(i);
-      datalist.appendChild(opt);
-    }
-    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
-    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
-    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos - 1); });
-    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(currentSliderPos + 1); });
-    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
-    playBtn.addEventListener('click', () => {
-      if (animTimer) { stopAnim(); }
-      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((currentSliderPos + 1) % steps.length), 200); }
-    });
-  }
-
-  // ── Premier rendu ─────────────────────────────────────────────────────
-  await render(0, currentFieldIdx);
-  renderer.resetCamera();
+  // ── Barre de lecture commune + premier rendu (rejette si échec → showError) ──
+  const bar = container.querySelector<HTMLElement>('.vp-bar')!;
+  await createPlayer(bar, {
+    steps: Math.max(1, steps.length),
+    fields: hasSca ? fieldsConfig : [],
+    render,
+  });
+  zoom.reset();
   renWin.render();
   container.querySelector<HTMLElement>('.vtk3d-loading')!.style.display = 'none';
   new ResizeObserver(() => { rw.resize(); renWin.render(); }).observe(canvasEl);
 
   // ── Boutons de vue ────────────────────────────────────────────────────
-  container.querySelector<HTMLElement>('.vtk3d-view-btns')!.style.display = 'flex';
-
   container.querySelector<HTMLButtonElement>('.vtk3d-reset')!.addEventListener('click', () => {
     cam.setViewUp(0, -1, 0);
-    renderer.resetCamera();
+    zoom.reset();
     renWin.render();
   });
 
@@ -537,7 +471,7 @@ async function initVtk3D(container: HTMLElement) {
     cam.setViewUp(0, -1, 0);
     cam.setPosition(0, 0, -1);
     cam.setFocalPoint(0, 0, 0);
-    renderer.resetCamera();
+    zoom.reset();
     renWin.render();
   });
 

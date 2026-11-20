@@ -18,7 +18,9 @@ import vtkMouseCameraTrackballZoomManipulator  from '@kitware/vtk.js/Interaction
 import {
   CMAPS, fetchNpy, idx, buildPositions, buildScalars, fieldRange, makeCells, cellsWithoutNaN,
   toTexture, frameToTexture, formatValue, configureLut, drawColorbar,
+  limitZoomOut,
 } from './vtk-core';
+import { createPlayer } from './vtk-player';
 import type { NpyArray, RawData, ColorbarEls } from './vtk-core';
 
 type FieldDef = { index: number; name: string };
@@ -60,7 +62,7 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
   rw.setContainer(canvasEl);
   rw.resize();
   const renderer = rw.getRenderer();
-  renderer.setBackground(0.118, 0.118, 0.173);
+  renderer.setBackground(0.067, 0.067, 0.106); // #11111b, fond du cadre
   const renWin = rw.getRenderWindow();
 
   const iStyle = vtkInteractorStyleManipulator.newInstance();
@@ -100,6 +102,7 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
 
   const cam = renderer.getActiveCamera();
   cam.setParallelProjection(true);
+  const zoom = limitZoomOut(renderer, cam); // dé-zoom borné à MAX_ZOOM_OUT × vue de référence
 
   let cameraInit = false;
   let bgActor: any = null;
@@ -114,7 +117,6 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
 
   // ── Rendu ──────────────────────────────────────────────────────────────
   let currentStep = -1;
-  let currentFieldIdx = fieldsConfig[0].index;
 
   // updatePanelBackground (l.179-211) → renommé updateBackground (un seul panneau)
   async function updateBackground(st: StepCfg) {
@@ -138,7 +140,7 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
         bgActor = vtkActor.newInstance(); bgActor.setMapper(pm);
         renderer.addActor(bgActor);
         cam.setPosition(w/2, h/2, 10); cam.setFocalPoint(w/2, h/2, 0);
-        cam.setViewUp(0, 1, 0); cam.setParallelScale(h/2);
+        cam.setViewUp(0, 1, 0); cam.setParallelScale(h/2); zoom.mark();
         cameraInit = true;
       }
       bgActor.getTextures().forEach((t: any) => bgActor.removeTexture(t));
@@ -191,81 +193,25 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
     scalarsArr.setData(sc);
     scalarsArr.modified(); pd.modified();
     meshMapper.setScalarRange(vmin, vmax);
-    if (!cameraInit) { renderer.resetCamera(); cameraInit = true; }
+    if (!cameraInit) { zoom.reset(); cameraInit = true; }
     renWin.render();
 
-    currentFieldIdx = fieldIdx;
   }
 
-  // ── Contrôles (récupérés AVANT goTo pour éviter tout TDZ sur slider/label) ──
-  const controls = el.querySelector<HTMLElement>('.fc-controls')!;
-  const slider   = el.querySelector<HTMLInputElement>('.fc-slider')!;
-  const label    = el.querySelector<HTMLElement>('.fc-label')!;
-  const playBtn  = el.querySelector<HTMLButtonElement>('.fc-play')!;
-  const firstBtn = el.querySelector<HTMLButtonElement>('.fc-first')!;
-  const prevBtn  = el.querySelector<HTMLButtonElement>('.fc-prev')!;
-  const nextBtn  = el.querySelector<HTMLButtonElement>('.fc-next')!;
-  const lastBtn  = el.querySelector<HTMLButtonElement>('.fc-last')!;
-  let animTimer: ReturnType<typeof setInterval> | null = null;
-  function stopAnim() { if (animTimer) { clearInterval(animTimer); animTimer = null; playBtn.textContent = '▶'; } }
-
-  const fieldsDiv = el.querySelector<HTMLElement>('.fc-fields')!;
   let sliderPos = 0;
-
-  // ── Point d'extension pour la Task 2 (marqueur sur la courbe) ───────────
+  // Marqueur de la courbe : branché plus bas, une fois le <Plot1D> initialisé.
   let onStep: (i: number) => void = () => {};
 
-  async function goTo(pos: number) {
-    sliderPos = Math.max(0, Math.min(pos, steps.length - 1));
-    const p = sliderPos;
-    label.textContent = `${p + 1}/${steps.length}`;
-    slider.value = String(p);
-    await renderField(p, currentFieldIdx);
-    onStep(p);
+  async function render(stepPos: number, fieldIdx: number) {
+    await renderField(stepPos, fieldIdx);
+    sliderPos = stepPos;
+    onStep(stepPos);
   }
 
-  // ── Sélecteur de champ partagé (adapté l.285-302) ───────────────────────
-  if (fieldsConfig.length > 1) {
-    fieldsDiv.style.display = 'flex';
-    fieldsConfig.forEach(({ index, name }) => {
-      const btn = document.createElement('button');
-      btn.textContent = name;
-      btn.dataset.idx = String(index);
-      const active = index === fieldsConfig[0].index;
-      btn.style.cssText = `padding:3px 10px;font:11px monospace;border-radius:4px;cursor:pointer;border:1px solid #45475a;background:${active?'#89b4fa':'#313244'};color:${active?'#1e1e2e':'#cdd6f4'};`;
-      btn.addEventListener('click', async () => {
-        stopAnim();
-        fieldsDiv.querySelectorAll('button').forEach(b => { b.style.background = '#313244'; b.style.color = '#cdd6f4'; });
-        btn.style.background = '#89b4fa'; btn.style.color = '#1e1e2e';
-        currentFieldIdx = index;
-        await renderField(sliderPos, index);
-      });
-      fieldsDiv.appendChild(btn);
-    });
-  }
-
-  // ── Slider de pas partagé (adapté l.304-324) ────────────────────────────
-  const hasSteps = steps.length > 1;
-  if (hasSteps) {
-    controls.style.display = 'flex';
-    slider.max = String(steps.length - 1);
-    const datalist = el.querySelector<HTMLDataListElement>('.fc-datalist')!;
-    const listId = 'fc-dl-' + Math.random().toString(36).slice(2);
-    datalist.id = listId; slider.setAttribute('list', listId);
-    for (let i = 0; i < steps.length; i++) { const opt = document.createElement('option'); opt.value = String(i); datalist.appendChild(opt); }
-    slider.addEventListener('input', () => { stopAnim(); goTo(parseInt(slider.value)); });
-    firstBtn.addEventListener('click', () => { stopAnim(); goTo(0); });
-    prevBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos - 1); });
-    nextBtn.addEventListener('click',  () => { stopAnim(); goTo(sliderPos + 1); });
-    lastBtn.addEventListener('click',  () => { stopAnim(); goTo(steps.length - 1); });
-    playBtn.addEventListener('click', () => {
-      if (animTimer) stopAnim();
-      else { playBtn.textContent = '⏸'; animTimer = setInterval(() => goTo((sliderPos + 1) % steps.length), 200); }
-    });
-  }
-
-  // ── Premier rendu ─────────────────────────────────────────────────────
-  await goTo(0);
+  // ── Barre de lecture commune + premier rendu (rejette si échec → .fc-error) ──
+  await createPlayer(el.querySelector<HTMLElement>('.vp-bar')!, {
+    steps: steps.length, fields: fieldsConfig, render,
+  });
   el.querySelector<HTMLElement>('.fc-loading')!.style.display = 'none';
 
   new ResizeObserver(() => {
@@ -274,10 +220,8 @@ export async function initFieldCurve(el: HTMLElement): Promise<void> {
   }).observe(el.querySelector<HTMLElement>('.fc-field')!);
 
   // ── Bouton reset (adapté l.372-381, un seul panneau) ────────────────────
-  const resetBtn = el.querySelector<HTMLButtonElement>('.fc-reset')!;
-  resetBtn.style.display = 'block';
-  resetBtn.addEventListener('click', () => {
-    renderer.resetCamera();
+  el.querySelector<HTMLButtonElement>('.fc-reset')!.addEventListener('click', () => {
+    zoom.reset();
     renWin.render();
   });
 
