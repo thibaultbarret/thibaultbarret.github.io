@@ -3,6 +3,7 @@
 import { getCollection } from 'astro:content';
 
 const projects = (await getCollection('programming'))
+  .filter(p => p.data.show)
   .sort((a, b) => a.data.order - b.data.order);
 
 const statusStyle: Record<string, string> = {

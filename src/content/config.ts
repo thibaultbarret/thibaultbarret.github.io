@@ -45,6 +45,7 @@ const programming = defineCollection({
     tags:        z.array(z.string()),
     github:      z.string().optional(),
     order:       z.number(),
+    show:        z.boolean().default(true),
   }),
 });
 
