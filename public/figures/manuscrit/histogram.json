@@ -1,6 +1,7 @@
 {
+    "dossier": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched",
     "histogram": true,
-    "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/comparaison_deformations_cin_deformations_sl_u_cin.npy",
+    "data": "comparaison_deformations_cin_deformations_sl_u_cin.npy",
     "fields_config": [
         { "index": 0, "name": "\\varepsilon_{\\mathrm{xx}}" },
         { "index": 1, "name": "\\varepsilon_{\\mathrm{yy}}" },

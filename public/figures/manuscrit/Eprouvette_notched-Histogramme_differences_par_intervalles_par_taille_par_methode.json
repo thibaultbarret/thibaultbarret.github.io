@@ -1,33 +1,34 @@
 {
+    "dossier": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched",
     "histogram_seuils": true,
     "seuil_bas": "1e-4",
     "seuil_haut": "1e-3",
     "datasets": [
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_05.npy",
+            "data": "differences_absolues_deformation_cin_ef_taille_elt_05.npy",
             "name": "\\text{Interpolation — taille d'élément 0,5}",
             "hatch": true
         },
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_1.npy",
+            "data": "differences_absolues_deformation_cin_ef_taille_elt_1.npy",
             "name": "\\text{taille d'élément 1}",
             "hatch": true
         },
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_2.npy",
+            "data": "differences_absolues_deformation_cin_ef_taille_elt_2.npy",
             "name": "\\text{taille d'élément 2}",
             "hatch": true
         },
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_05.npy",
+            "data": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_05.npy",
             "name": "\\text{StrainLeveling — taille d'élément 0,5}"
         },
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_1.npy",
+            "data": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_1.npy",
             "name": "\\text{StrainLeveling — taille d'élément 1}"
         },
         {
-            "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_2.npy",
+            "data": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_2.npy",
             "name": "\\text{StrainLeveling — taille d'élément 2}"
         }
     ],

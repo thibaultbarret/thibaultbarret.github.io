@@ -1,11 +1,12 @@
 {
+    "dossier": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched",
     "histogram_seuils": true,
     "seuil_bas": "1e-4",
     "seuil_haut": "5e-4",
     "datasets": [
-        { "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_1.npy",
+        { "data": "differences_absolues_deformation_cin_ef_taille_elt_1.npy",
           "name": "\\text{taille d'élément 1}" },
-        { "data": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_2.npy",
+        { "data": "differences_absolues_deformation_cin_ef_taille_elt_2.npy",
           "name": "\\text{taille d'élément 2}", "hatch": true }
     ],
     "fields_config": [

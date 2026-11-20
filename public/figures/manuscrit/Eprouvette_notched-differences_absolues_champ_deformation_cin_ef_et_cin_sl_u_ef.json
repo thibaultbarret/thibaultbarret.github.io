@@ -1,4 +1,6 @@
 {
+    "dossier": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched",
+    "image_pas": "synthetic_image_notched_specimen_size_elt_1_step_0.png",
     "fields_config": [
         {
             "index": 0,
@@ -28,39 +30,39 @@
     "panels": [
         {
             "title": "0.5 mm",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_05.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_ef_taille_elt_05.npy"
         },
         {
             "title": "1 mm",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_1.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_ef_taille_elt_1.npy"
         },
         {
             "title": "Taille 2",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_ef_taille_elt_2.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_ef_taille_elt_2.npy"
         },
         {
             "title": "0.5 mm",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_05.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_05.npy"
         },
         {
             "title": "1 mm",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_1.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_1.npy"
         },
         {
             "title": "Taille 2",
-            "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/coordonnees_subsets_px.npy",
-            "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/triangulation_subsets.npy",
-            "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/differences_absolues_deformation_cin_sl_u_ef_taille_elt_2.npy"
+            "coords": "coordonnees_subsets_px.npy",
+            "triangles": "triangulation_subsets.npy",
+            "fields": "differences_absolues_deformation_cin_sl_u_ef_taille_elt_2.npy"
         }
     ],
     "columns": 3,
@@ -71,7 +73,6 @@
     "steps": [
         {
             "step": 0,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -83,7 +84,6 @@
         },
         {
             "step": 1,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -95,7 +95,6 @@
         },
         {
             "step": 2,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -107,7 +106,6 @@
         },
         {
             "step": 3,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -119,7 +117,6 @@
         },
         {
             "step": 4,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -131,7 +128,6 @@
         },
         {
             "step": 5,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -143,7 +139,6 @@
         },
         {
             "step": 6,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -155,7 +150,6 @@
         },
         {
             "step": 7,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -167,7 +161,6 @@
         },
         {
             "step": 8,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00003<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -179,7 +172,6 @@
         },
         {
             "step": 9,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00011<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -191,7 +183,6 @@
         },
         {
             "step": 10,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -203,7 +194,6 @@
         },
         {
             "step": 11,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -215,7 +205,6 @@
         },
         {
             "step": 12,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00012<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -227,7 +216,6 @@
         },
         {
             "step": 13,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -239,7 +227,6 @@
         },
         {
             "step": 14,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -251,7 +238,6 @@
         },
         {
             "step": 15,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00011<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -263,7 +249,6 @@
         },
         {
             "step": 16,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -275,7 +260,6 @@
         },
         {
             "step": 17,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -287,7 +271,6 @@
         },
         {
             "step": 18,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -299,7 +282,6 @@
         },
         {
             "step": 19,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -311,7 +293,6 @@
         },
         {
             "step": 20,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -323,7 +304,6 @@
         },
         {
             "step": 21,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -335,7 +315,6 @@
         },
         {
             "step": 22,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -347,7 +326,6 @@
         },
         {
             "step": 23,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -359,7 +337,6 @@
         },
         {
             "step": 24,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -371,7 +348,6 @@
         },
         {
             "step": 25,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00004<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -383,7 +359,6 @@
         },
         {
             "step": 26,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -395,7 +370,6 @@
         },
         {
             "step": 27,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -407,7 +381,6 @@
         },
         {
             "step": 28,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -419,7 +392,6 @@
         },
         {
             "step": 29,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -431,7 +403,6 @@
         },
         {
             "step": 30,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -443,7 +414,6 @@
         },
         {
             "step": 31,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -455,7 +425,6 @@
         },
         {
             "step": 32,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -467,7 +436,6 @@
         },
         {
             "step": 33,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -479,7 +447,6 @@
         },
         {
             "step": 34,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00005<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -491,7 +458,6 @@
         },
         {
             "step": 35,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -503,7 +469,6 @@
         },
         {
             "step": 36,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -515,7 +480,6 @@
         },
         {
             "step": 37,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00006<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -527,7 +491,6 @@
         },
         {
             "step": 38,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -539,7 +502,6 @@
         },
         {
             "step": 39,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -551,7 +513,6 @@
         },
         {
             "step": 40,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -563,7 +524,6 @@
         },
         {
             "step": 41,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -575,7 +535,6 @@
         },
         {
             "step": 42,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00007<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -587,7 +546,6 @@
         },
         {
             "step": 43,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -599,7 +557,6 @@
         },
         {
             "step": 44,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -611,7 +568,6 @@
         },
         {
             "step": 45,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00008<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -623,7 +579,6 @@
         },
         {
             "step": 46,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -635,7 +590,6 @@
         },
         {
             "step": 47,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -647,7 +601,6 @@
         },
         {
             "step": 48,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
@@ -659,7 +612,6 @@
         },
         {
             "step": 49,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/Eprouvette_notched/synthetic_image_notched_specimen_size_elt_1_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.00010<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",
                 "1": "valeur maximale : 0.00009<br>valeur minimale : 0.00000<br>valeur moyenne : 0.00000<br>écart-type : 0.00000",

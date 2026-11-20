@@ -1,7 +1,9 @@
 {
-    "coords": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/coordonnees_subsets_px.npy",
-    "triangles": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/subset_triangulation.npy",
-    "fields": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/difference_relative_absolue_deformations_cin_sl_u_cin.npy",
+    "dossier": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement",
+    "image_pas": "synthetic_image_homogeneous_shear_step_0.png",
+    "coords": "coordonnees_subsets_px.npy",
+    "triangles": "subset_triangulation.npy",
+    "fields": "difference_relative_absolue_deformations_cin_sl_u_cin.npy",
     "fields_config": [
         {
             "index": 0,
@@ -35,7 +37,6 @@
     "steps": [
         {
             "step": 0,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 105.0277<br>valeur minimale : 0.0000<br>valeur moyenne : 0.5167<br>écart-type : 1.4789",
                 "1": "valeur maximale : 33.0252<br>valeur minimale : 0.0001<br>valeur moyenne : 0.5369<br>écart-type : 0.8869",
@@ -47,7 +48,6 @@
         },
         {
             "step": 1,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 2.5683<br>valeur minimale : 0.0000<br>valeur moyenne : 0.1228<br>écart-type : 0.1300",
                 "1": "valeur maximale : 1.4508<br>valeur minimale : 0.0000<br>valeur moyenne : 0.1352<br>écart-type : 0.1239",
@@ -59,7 +59,6 @@
         },
         {
             "step": 2,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 1.5127<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0578<br>écart-type : 0.0684",
                 "1": "valeur maximale : 0.8226<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0766<br>écart-type : 0.0727",
@@ -71,7 +70,6 @@
         },
         {
             "step": 3,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.9955<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0340<br>écart-type : 0.0452",
                 "1": "valeur maximale : 0.7475<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0636<br>écart-type : 0.0609",
@@ -83,7 +81,6 @@
         },
         {
             "step": 4,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.6989<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0241<br>écart-type : 0.0357",
                 "1": "valeur maximale : 0.6943<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0596<br>écart-type : 0.0579",
@@ -95,7 +92,6 @@
         },
         {
             "step": 5,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.5724<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0181<br>écart-type : 0.0298",
                 "1": "valeur maximale : 0.6667<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0591<br>écart-type : 0.0593",
@@ -107,7 +103,6 @@
         },
         {
             "step": 6,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.5063<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0157<br>écart-type : 0.0261",
                 "1": "valeur maximale : 0.7683<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0591<br>écart-type : 0.0610",
@@ -119,7 +114,6 @@
         },
         {
             "step": 7,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.4958<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0136<br>écart-type : 0.0238",
                 "1": "valeur maximale : 0.7909<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0593<br>écart-type : 0.0628",
@@ -131,7 +125,6 @@
         },
         {
             "step": 8,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.4343<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0135<br>écart-type : 0.0223",
                 "1": "valeur maximale : 0.8215<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0605<br>écart-type : 0.0663",
@@ -143,7 +136,6 @@
         },
         {
             "step": 9,
-            "image": "/data/Validation_outil_calcul_deformation_formalisme_cin_locale/cisaillement/synthetic_image_homogeneous_shear_step_0.png",
             "text": {
                 "0": "valeur maximale : 0.4388<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0138<br>écart-type : 0.0214",
                 "1": "valeur maximale : 0.8487<br>valeur minimale : 0.0000<br>valeur moyenne : 0.0620<br>écart-type : 0.0696",
