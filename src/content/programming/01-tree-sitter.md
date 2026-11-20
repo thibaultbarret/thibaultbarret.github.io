@@ -7,6 +7,7 @@ status: "en cours"
 tags: ["Tree-sitter", "MFront", "MTest", "Grammaire", "Parsing"]
 github: ""
 order: 1
+show: false
 ---
 
 Ce projet a pour but de dotter `MFront` et `MTest` d'une grammaire Tree-sitter,

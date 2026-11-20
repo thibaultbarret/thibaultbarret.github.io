@@ -6,12 +6,13 @@ status: "en cours"
 tags: ["LSP", "MFront", "MTest", "Language Server", "Neovim", "VS Code"]
 github: ""
 order: 2
+show: false
 ---
 
 Ce projet a pour but de développer un serveur de langage (Language Server Protocol - LSP) pour les langages `MFront` et `MTest`.
 Le LSP permettra d'apporter des fonctionnalités telles que la complétion de code, la navigation dans le code et le diagnostic en temps réel dans les éditeurs compatibles LSP comme `Neovim`, etc.
-L'objectif est d'améliorer l'expérience de développement pour les utilisateurs de `MFront` et `MTest` en fournissant des outils d'aide à la programmation et de détection
-d'erreurs directement dans leur éditeur de code préféré.
+L'objectif est d'améliorer l'expérience de développement pour les utilisateurs de `MFront` et `MTest` en fournissant des outils d'aide à la
+programmation et de détection d'erreurs directement dans leur éditeur de code préféré.
 
 # Fonctionnalités
 
@@ -29,7 +30,7 @@ Il fournit des diagnostics précis sur les erreurs de syntaxe, les problèmes de
 ### Diagnostic des injections de `C++`
 
 Certains mots clés de `MFront` sont suivis d'une injection de code `C++` (ex: `code{...}`).
-Le LSP délègue l'analyse de ce code `C++` à un serveur de langage l'occurence:clangd
+Le LSP délègue l'analyse de ce code `C++` à un serveur de langage en l'occurence `clangd`
 pour fournir des diagnostics précis sur les erreurs de syntaxe et les problèmes potentiels dans le code `C++` injecté.
 
 # Installation

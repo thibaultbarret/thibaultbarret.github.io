@@ -6,7 +6,7 @@ figure: ""
 tags: ["Loi de comportement thermomécanique", "MFront", "MTest", "Abaqus"]
 status: "en cours"
 order: 0
-show: true
+show: false
 ---
 
 # Introduction
@@ -55,7 +55,7 @@ L'implémentation de loi de comportement élastoplastique isotrope peut être fa
         ) ;
 
     df_dseq = 1. ; // ∂f\∂σ
-    df_dp = pAlpha*coefK*expN*pow(epsiZero+p, expN-1) - (1-pAlpha)*expQ*sigmaInf*exp(-expQ*p) // ∂f/∂p
+    df_dp = coefAlpha*coefK*expN*pow(epsiZero+p, expN-1) - (1-coefAlpha)*expQ*sigmaInf*exp(-expQ*p) // ∂f/∂p
 }
 
 ```
