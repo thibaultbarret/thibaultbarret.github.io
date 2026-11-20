@@ -1,0 +1,3 @@
+# Données de figures (JSON de champs) et rendus : gonflent le corpus sans apport sémantique
+public/figures/
+*.png

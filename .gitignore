@@ -30,3 +30,9 @@ pnpm-debug.log*
 equations/*.aux
 equations/*.log
 equations/*.pdf
+
+# Cache graphify (graphe de connaissances)
+graphify-out/
+
+# Brouillons et suivi des sessions superpowers
+.superpowers/
